@@ -93,9 +93,8 @@ def speed_ini(file, sfa, efa):
                     break
         for i in range(5, DelIndex - 1):
              fc.pop(5)
-        fc[5] = f'global $speed = 0.5\nglobal $frameStart= {sfa}\nglobal $frameEnd = {efa}\nglobal $swapvar = 0\nglobal $auxTime = 0\n\n'
-        fc.insert(6, f'[Present]\nif $auxTime % $speed == 0\n    if $swapvar < $frameEnd\n        $swapvar = $swapvar + 1\n    else\n        $swapvar = $frameStart\n    endif\nendif\nif $auxTime >= 1000\n    post $auxTime = $auxTime - 1000\nelse\n    post $auxTime= $auxTime + 1\nendif\n\n')
-        
+        fc[5] = f'global $speed = 2\nglobal $frameStart= {sfa}\nglobal $frameEnd = {efa}\nglobal $swapvar = 0\nglobal $swapvarAux = 0\nglobal $auxTime = 0\n\n'
+        fc.insert(6, f'[Present]\nif ($swapvarAux + (1/$speed)) < $frameEnd\n    $swapvarAux = $swapvarAux + (1/$speed)\nelse\n    $swapvarAux = $frameStart\nendif\n$swapvar=$swapvarAux//1\n')        
     dis_ini(ini_file)
     with open('0.ini', "w", encoding="utf-8") as f:
         f.writelines(fc)
