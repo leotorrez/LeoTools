@@ -4,15 +4,21 @@ from blender_3dmigoto_gimi import export_3dmigoto_genshin, Fatal
 from bpy_extras.io_utils import ExportHelper
 from bpy.utils import register_class, unregister_class
 import subprocess
-
+bl_info = {
+    "name": "JoinMeshes",
+    "blender": (2, 80, 0),
+    "author": "LeoTorreZ / LeoMods",
+    "location": "View3D > Sidebar > LeoTools",
+    "description": "Facilitates the workflow when dealing with mods made in GIMI.",
+    "category": "Interface",
+    "tracker_url": "https://github.com/leotorrez/LeoTools",
+}
 class MainPanel:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "LeoTools"
 
     #bl_options = {"DEFAULT_CLOSED"}
-
-
 
 class MyProperties(bpy.types.PropertyGroup):
 
