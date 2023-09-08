@@ -118,6 +118,6 @@ if __name__ == "__main__":
     prompt = input("This script will fix Lynette Dash for you. YOU MUST run AGMG3ShaderFix 37.py before hand. Do you want to continue? (y/n) ")
     if prompt.lower() == "y":
         process_folder(folder_path)
-        print("Done!")
+        print("Done! Make sure to install Yelan Dash fix in ShaderFixes")
     else:
         print("Canceled. Exiting...")
