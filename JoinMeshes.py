@@ -1,3 +1,4 @@
+# Version: 2.0
 import bpy
 import os
 from blender_3dmigoto_gimi import export_3dmigoto_genshin, Fatal
@@ -117,7 +118,7 @@ class MyProperties(bpy.types.PropertyGroup):
 class MY_PT_SelectStuffPanel(MainPanel,bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
     bl_idname = "MY_PT_SelectStuffPanel"
-    bl_label = "Select Stuff Here you dummy"
+    bl_label = "Select Stuff Here you dummy :3"
     #    bl_label = "My Panel"
     #    bl_idname = "OBJECT_PT_my_panel"
     #    bl_space_type = 'PROPERTIES'
@@ -128,7 +129,6 @@ class MY_PT_SelectStuffPanel(MainPanel,bpy.types.Panel):
         layout = self.layout
 
         my_tool = context.scene.my_tool
-        # Add a button to select a collection
         row = layout.row()
 
         split = layout.split(factor=0.75)
@@ -137,12 +137,7 @@ class MY_PT_SelectStuffPanel(MainPanel,bpy.types.Panel):
         col_1.prop(my_tool, "ExportFile")
         col_2.operator("export.selector", icon="FILE_FOLDER", text="")
         layout.separator()
-
-        layout.prop(context.scene, "Head")
-        layout.prop(context.scene, "Body")
-        layout.prop(context.scene, "Dress")
-        layout.prop(context.scene, "Extra")
-        
+       
         row = layout.row()
         row.operator("my.execute_auxclass", text="Export Mod")
 
@@ -157,7 +152,6 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
     
     filename_ext = "."
     use_filter_folder = True
-    # filename_ext = ".vb"
     filter_glob : bpy.props.StringProperty(
             default='.',
             options={'HIDDEN'},
@@ -275,9 +269,13 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         userpath = self.properties.filepath
         if not os.path.isdir(userpath):
-            msg = "Please select a directory not a file\n" + userpath
-            self.report({'WARNING'}, msg)
-        
+            # attempt to remove file path 
+            userpath = os.path.dirname(userpath)
+            self.properties.filepath = userpath
+            if not os.path.isdir(userpath):
+                msg = "Please select a directory not a file\n" + userpath
+                self.report({'WARNING'}, msg)
+
         context.scene.my_tool.ExportFile = self.properties.filepath    
         context.scene.my_tool.use_foldername = self.properties.use_foldername
         context.scene.my_tool.ignore_hidden = self.properties.ignore_hidden
@@ -309,35 +307,38 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         dirPath = os.path.dirname(my_tool.ExportFile)
         object_name = os.path.basename(dirPath)
         try:
-            HeadName = None
-            BodyName = None
-            DressName = None
-            ExtraName = None
-            # if not [obj for obj in scene.objects if object_name.lower() in obj.name.lower()]:
-            #     raise Fatal("ERROR: Cannot find match for name. Double check you are exporting as ObjectName.vb to the original data folder, that ObjectName exists in scene and that hash.json exists")
-            for obj in scene.objects:
-                if object_name.lower()+"head" in obj.name.lower() and obj.visible_get():
-                    HeadName = obj.name
-                elif object_name.lower()+"body" in obj.name.lower() and obj.visible_get():
-                    BodyName = obj.name
-                elif object_name.lower()+"dress" in obj.name.lower() and obj.visible_get():
-                    DressName = obj.name
-                elif object_name.lower()+"extra" in obj.name.lower() and obj.visible_get():
-                    ExtraName = obj.name
+            mainobjects = [obj for obj in scene.objects if obj.name.lower().startswith(object_name.lower()) and obj.visible_get() and obj.type == "MESH"]
+            collectionstojoin = []
+            for col in bpy.data.collections:
+                for obj in mainobjects:
+                    if obj.name.lower().startswith(col.name.lower()):
+                        collectionstojoin.append(col)
 
-            
+            #skipping error check ign for now. trusting in gimi to solve it for me
             bpy.ops.object.select_all(action='DESELECT')
             bpy.ops.object.make_single_user(type='ALL', object=True, obdata=True, animation=True, obdata_animation=True)
-            # checks if the collections exist before joining. otherwise doesnt join
-            if(HeadName is not None):
-                self.joinInto(scene.Head, HeadName)
-            if(BodyName is not None):
-                self.joinInto(scene.Body, BodyName)
-            if(DressName is not None):
-                self.joinInto(scene.Dress, DressName)
-            if(ExtraName is not None):
-                self.joinInto(scene.Extra, ExtraName)
-            
+            for obj in mainobjects:
+                print("Searching partner for "+obj.name)
+                for col in collectionstojoin:
+                    if obj.name.lower().startswith(col.name.lower()):
+                        self.report({"WARNING"},"Found MATCH!")
+                        col = bpy.data.collections[col.name]
+                        self.joinInto(col, obj)
+                        mainobjects.remove(obj)
+                        collectionstojoin.remove(col)
+                        break
+                self.report({'WARNING'},"Collection not found for object: " + obj.name)
+            if len(mainobjects) > 0:
+                print("Warning: some objects were ignored. or had no match.")
+                print("Objects ignored: ")
+                for obj in mainobjects:
+                    print(obj.name)
+            if len(collectionstojoin) > 0:
+                print("Warning: some collections were ignored. or had no match.")
+                print("Collections ignored: ")
+                for col in collectionstojoin:
+                    print(col.name)
+
             filepath = dirPath + "/" + object_name + ".vb"
             if(filename is not None):
                 path=dirPath
@@ -367,7 +368,8 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
             if obj.type == "MESH":
                 destination.append(obj)
 
-    def joinInto(self, collection_name, target_obj_name):
+    def joinInto(self, collection_name, object):
+        target_obj_name=object.name
         target_obj = bpy.data.objects[target_obj_name]
         objects_to_join = []
         if collection_name is not None:
@@ -465,8 +467,6 @@ class ExportAnimationOperator(ExecuteAuxClassOperator):
             print(f"Error running file2.py: {e}")
         return {'FINISHED'}
     
- 
-
 classes = (
     MyProperties,
     MY_PT_SelectStuffPanel,
@@ -476,26 +476,14 @@ classes = (
     ExportAnimationOperator
 )
 def register():
-    bpy.types.Scene.Head = bpy.props.PointerProperty(type=bpy.types.Collection)
-    bpy.types.Scene.Body = bpy.props.PointerProperty(type=bpy.types.Collection)
-    bpy.types.Scene.Dress = bpy.props.PointerProperty(type=bpy.types.Collection)
-    bpy.types.Scene.Extra = bpy.props.PointerProperty(type=bpy.types.Collection)
-
     for cls in classes:
         register_class(cls)
     bpy.types.Scene.my_tool = bpy.props.PointerProperty(type=MyProperties)    
 
 def unregister():
     del bpy.types.Scene.my_tool
-    del bpy.types.Scene.Extra
-    del bpy.types.Scene.Dress
-    del bpy.types.Scene.Body
-    del bpy.types.Scene.Head
     for cls in reversed(classes):
         unregister_class(cls)
 
 if __name__ == "__main__":
     register()
-
-
-
