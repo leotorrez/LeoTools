@@ -180,8 +180,7 @@ endif
 You don't need to offset the face if you hide it. But in case you don't - it is possible. Works perfectly if nothing was resized.
 
 To offset the face, you need:
-- `$faceOffset` variable in your [Constants] section (or you can use the `$offset` variable you already have for the body),
-- `$global\offset\faceScale = $faceScale` line in your [Position] section
+- `$faceOffset` variable in your [Constants] section (or you can use the `$offset` variable you already have for the body)
 - `run = CommandList\global\offset\Offset` line in each part of the face.  
 
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
