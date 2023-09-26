@@ -13,6 +13,7 @@ This is a guide for the tool that allows you to offset characters position and c
     - [Offset](#offset)
 - [Modifying face](#modifying-face)
     - [Hiding face](#hiding-face)
+    - [Replacing face](#replace-face)
     - [Resizing face](#resizing-face)
 - [Quick summary](#quick-summary)
 - [Tips](#tips)
@@ -22,7 +23,7 @@ This is a guide for the tool that allows you to offset characters position and c
 ## Requirements
 
 - A fully working character mod
-- [Offset-Scale Changer](https://github.com/leotorrez/LeoTools/tree/main/releases)  
+- [Offset-Scale Changer](https://github.com/leotorrez/LeoTools/releases/tag/offsetchanger)  
 - [Multiply weight Python script](https://github.com/leotorrez/LeoTools/blob/main/multiplyweight.py)
 
 Before we start, make a backup or two!
@@ -33,9 +34,9 @@ I also recommend that you read the [restrictions](#restrictions) section first.
 ## Restrictions
 
 - ***VERY IMPORTANT:*** If you want to age a character up or down, you need to change their proportions (head-to-body size ratio), unless you want to create a giant kid or a tiny adult. You will quickly notice that the face doesn't line up with the head. Adjusting it would require you to use different scaling values for the body and the face (e.g., 1.44 for the body and 0.9 for the face). You can offset both the face and the body if you don't resize them, but the math stops working properly if you do. Most of the time, you simply cannot use the same offset values for the face. Moreover, different scaling values result in a difference between the relative positions of the face and body pivot points compared to their default positions. Therefore, you might need to model a fake face for your character and place it in their body mesh. The downside is that they are going to lose their facial animations.
-- Resized characters use their original animations which vary for different body types/heights. For example, adult Nahida is still gonna run like an idiot.
+- Resized characters use their original animations which vary for different body types/heights. For example, adult Nahida is still gonna run like a kid.
 - The game camera is going to remain where it was originally. For example, if you size a character up, their head is gonna be above the focal point of the camera. Alternatively, if you scale a character down, they are gonna be below the focal point of the camera. The same restriction applies to cutscenes.
-- Even though your character looks bigger/smaller, their skeleton remains the same. So your character's attacks are not going to reach further than they do originally. The same applies to climbing, swimming, etc. In other words, it does not alter gameplay in any way; it is purely a visual change.
+- Even though your character looks bigger/smaller, their skeleton remains the same. So your character's attacks are not going to reach further than they do originally. The same applies to climbing, swimming, etc. In other words, it does not alter gameplay in any way; it is purely a cosmetic change.
 
 ## Blender setup
 
@@ -47,6 +48,7 @@ There are a few key points to prepare your model for resizing.
 
 Scale your character model as close as possible to the original model.
 This is an example of adult Nahida body next to her default body.
+
 ![Side-to-side comparison](images/sts_comparison.png)  
 This is needed for proper weights transfer (if you haven't done this up to this point), and for proper deformations as well.
 You can use a character armature to check deformations in blender.  
@@ -57,6 +59,7 @@ Here is an example of misalignement of the sized down hair and the character's a
 In this case the misalignement is not big enough to cause a severe distortion in animations, in other words, it works for this model, but your mileage may vary.
 
 The eyes, on the other hand, are very sensitive to even the slightest difference to their position.
+
 ![Eyes difference](images/eyes_diff.png)  
 The bigger eyes are the default ones, and the smaller eyes are the modded ones.  
 
@@ -67,7 +70,7 @@ When you are done with all this, you can export your model.
 
 ### Export
 
-Export your model just like any other mod. No additional steps or instructions here.
+Export your model just like any other mod. No additional steps or instructions here. Scaling and offset are dealt with outside of blender.
 
 ## Scripts
 ### Resize
@@ -83,7 +86,7 @@ Export your model just like any other mod. No additional steps or instructions h
     
 You can run the game now - you will see that your character has different size.
 But you will quickly notice one issue.  
-If you upscaled the character, their feet or entire legs are gonna be in the gorund.
+If you upscaled the character, their feet or entire legs are gonna be in the ground.
 And if you downscaled the character, they are gonna float in the air
 
 To fix this issue, we need to offset the character.
@@ -108,7 +111,7 @@ global $offset = *offset_value*
 $\global\offset\offset = $offset
 ```
 6. Apply the offset to every character part they have (head, body, dress, extra).  
-To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections:
+To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
 ``` INI
 [TextureOverrideCharacterPart]
 ;initial overrides
@@ -120,7 +123,7 @@ run = CommandList\global\offset\Offset
 
 Modifying faces in any way creates all sorts of different issues (see [known issues](#known-issues) for more details), but it is still doable and, in our case, has to be done.
 
-It is very important that **all the modifications to the face parts are done by their IB hash**, NOT VB!
+It is very important that **all the modifications to the face parts are done by their IB hash**(there is 3 IBs for face. Eyes, mouth and eyebrows), NOT VB! (skipping VB will cause random issues)
 
 ### Hiding face
 
@@ -140,9 +143,19 @@ $active = 1
 
 [TextureOverrideFace1]
 ;hash = Face Part IB Hash
-handling = skip
+if $active == 1
+    handling = skip
+endif
+...
 ```
+### Replacing face
+We won't elaborate much on this section on the exact steps because there's several methos that could work even better than the one I use.
 
+However if you intend to hide the face and add your own into the body mesh, theres a few things to keep in mind. First of all you will lose in game facial animations. You can account for it with a universal rest pose or some animated mod that deals with it.
+
+The body shading is too complex for the style the face has, hence you need to get simplified normals on the face. Google the term for more info.
+
+Lastly. The eyes in genshin are actually hollow because of how their shaders are set up- HOWEVER we don't have the proper shading in body mesh. So you will have to think a way around it. I personally haven't found any good method so good luck on this and contact me if you find a decent method.
 ### Resizing face
 
 You don't need to resize the face if you hide it. But in case you don't - resizing is an option, although not recommended.
@@ -186,7 +199,7 @@ To offset the face, you need:
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
 ``` INI
 [Constants]
-$faceOffset = *face_offset_value*
+$offset = *face_offset_value*
 
 [TextureOverrideCharacterPosition]
 ;initial overrides
@@ -196,11 +209,10 @@ $\global\offset\faceOffset = $offset
 
 [TextureOverrideCharacterFaceIB1]
 ; hash =
-
-$\global\offset\faceActive = 1
 if $active == 1
     run = CommandList\global\offset\Offset
 endif
+...
 ```
 
 ## Quick Summary
