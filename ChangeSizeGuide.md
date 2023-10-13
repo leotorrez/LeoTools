@@ -1,4 +1,3 @@
-
 # Resize and offset character guide
 
 This is a guide for the tool that allows you to offset characters position and change their size in your mods.
@@ -99,24 +98,37 @@ To fix this issue, we need to offset the character.
 4. Add **offset** variable to the [Constants] section:
 ``` INI
 [Constants]
-;other values
-
 global $offset = *offset_value*
+...
 ```
 5. Calculate the offset when the character is on screen by adding `$\global\offset\offset = $offset` line in your [TextureOverrideCharacterPosition] section:
 ``` INI
+...
 [TextureOverrideCharacterPosition]
 ;initiall overrides
 
 $\global\offset\offset = $offset
+...
 ```
 6. Apply the offset to every character part they have (head, body, dress, extra).  
 To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
 ``` INI
+...
 [TextureOverrideCharacterPart]
 ;initial overrides
 
 run = CommandList\global\offset\Offset
+...
+```
+7. Remove or comment out the line `drawindexed = auto` from the first IB block
+
+```ini
+...
+[TextureOverrideCharacterIB]
+hash = *hash*
+handling = skip
+; drawindexed = auto
+...
 ```
 
 ## Modifying face
@@ -138,16 +150,26 @@ global $active = 0
 post $active = 0
 
 [TextureOverridePosition]
-;hash = 
+hash = 
 $active = 1
 
 [TextureOverrideFace1]
-;hash = Face Part IB Hash
+hash = *Face Part IB Hash*
 if $active == 1
     handling = skip
 endif
 ...
 ```
+The outlines of the face might end up floating midair if you have other shaders that interact with it. Like the outline and reflection fix for 3.0+ characters. In the case of this one you can fix it by adding an extra line to each of the 3 face IBs.  
+``` INI
+[TextureOverrideFace1]
+hash = *Face Part IB Hash*
+if $active == 1
+    $\global\ORFix\active = 0
+    handling = skip
+endif
+```
+
 ### Replacing face
 We won't elaborate much on this section on the exact steps because there's several methos that could work even better than the one I use.
 
@@ -349,18 +371,23 @@ match_priority = 1 ;Needed to eliminate the conflict with the main ini file beca
 [TextureOverrideFace1] 
 hash = 46343c52
 if $active == 1
+    $\global\ORFix\active = 0
     handling = skip
 endif
 
 [TextureOverrideFace2]
 hash = 17b3e07a
 if $active == 1
+    $\global\ORFix\active = 0
     handling = skip
 endif
 
 [TextureOverrideFace3]
 hash = 7fc58760
 if $active == 1
+    $\global\ORFix\active = 0
     handling = skip
 endif
 ```
+
+You can remove `$\global\ORFix\active = 0` if it causes issues.
