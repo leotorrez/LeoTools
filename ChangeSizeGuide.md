@@ -185,7 +185,7 @@ You don't need to resize the face if you hide it. But in case you don't - resizi
 To resize the face, you need:
 - `$faceScale` value in your [Constants] section
 - `$global\offset\faceScale = $faceScale` line in your [Position] section
-- `run = CommandList\global\offset\Offset` line in each part of the face.  
+- `run = CommandList\global\offset\OffsetFace` line in each part of the face.  
 
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
 ``` INI
@@ -206,7 +206,7 @@ $global\offset\faceScale = $faceScale
 ; hash =
 
 if $active == 1
-    run = CommandList\global\offset\Offset
+    run = CommandList\global\offset\OffsetFace
 endif
 ```
 
@@ -216,7 +216,7 @@ You don't need to offset the face if you hide it. But in case you don't - it is 
 
 To offset the face, you need:
 - `$faceOffset` variable in your [Constants] section (or you can use the `$offset` variable you already have for the body)
-- `run = CommandList\global\offset\Offset` line in each part of the face.  
+- `run = CommandList\global\offset\OffsetFace` line in each part of the face.  
 
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
 ``` INI
@@ -232,7 +232,7 @@ $\global\offset\faceOffset = $offset
 [TextureOverrideCharacterFaceIB1]
 ; hash =
 if $active == 1
-    run = CommandList\global\offset\Offset
+    run = CommandList\global\offset\OffsetFace
 endif
 ...
 ```
@@ -293,18 +293,18 @@ run = CommandListOffset
 [TextureOverrideShenheFaceIB1]
 hash = 7b61f273
 if $active == 1
-    run = CommandList\global\offset\Offset
+    run = CommandList\global\offset\OffsetFace
 endif
 
 [TextureOverrideShenheFaceIB2]
 hash = dc710a44
 if $active == 1
-    run = CommandList\global\offset\Offset
+    run = CommandList\global\offset\OffsetFace
 endif
 [TextureOverrideShenheFaceIB3]
 hash = f931161a
 if $active == 1
-    run = CommandList\global\offset\Offset
+    run = CommandList\global\offset\OffsetFace
 endif
 
 [TextureOverrideShenheBlend]
