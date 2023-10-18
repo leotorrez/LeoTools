@@ -13,4 +13,4 @@ Modding tools for GIMI, SRMI and HIMI (Most likely applicable to 3dmigoto moddin
 
 - **speedControl.py:** Complementary task for animation mods. After merging all the frames together, run this script in the animation folder to generate the animation controller and optimize the ram usage of the animated mod.
 
-- **ORFix.ini:** This is a global ini to fix reflection and outline in 3.0+ characters. [Read this guide to know how to use it in your mods.](https://github.com/leotorrez/LeoTools/blob/main/guides/ORFixguide.md)  
+- **ORFix.ini:** This is a global ini to fix reflection and outline in 3.0+ characters. [Read this guide to know how to use it in your mods.](https://github.com/leotorrez/LeoTools/blob/main/guides/ORFixGuide.md)  
