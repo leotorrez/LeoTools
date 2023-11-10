@@ -120,16 +120,6 @@ To do that, you need to add `run = CommandList\global\offset\Offset` line to the
 run = CommandList\global\offset\Offset
 ...
 ```
-7. Remove or comment out the line `drawindexed = auto` from the first IB block
-
-```ini
-...
-[TextureOverrideCharacterIB]
-hash = *hash*
-handling = skip
-; drawindexed = auto
-...
-```
 
 ## Modifying face
 
