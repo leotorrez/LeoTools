@@ -1,10 +1,15 @@
 # Version: 2.0
 import bpy
 import os
-from blender_3dmigoto_gimi import export_3dmigoto_genshin, Fatal
+try:
+    from blender_3dmigoto_srmi import export_3dmigoto_genshin, Fatal
+except ModuleNotFoundError as err:
+    from blender_3dmigoto_gimi import export_3dmigoto_genshin, Fatal
+    print("Couldn't find blender_3dmigoto_srmi, using blender_3dmigoto_gimi instead")
 from bpy_extras.io_utils import ExportHelper
 from bpy.utils import register_class, unregister_class
 import subprocess
+
 bl_info = {
     "name": "JoinMeshes",
     "blender": (2, 80, 0),

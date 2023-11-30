@@ -1,3 +1,5 @@
+# DEPRECATED FILE DONT USE 
+
 # V2.3
 
 # fixed Lynette Dash fix
