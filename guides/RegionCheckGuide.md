@@ -72,8 +72,8 @@ Open your `merge.ini` and scroll down to the end you the [Present] section. Your
 
 The code you use is as below
 ```ini
-if $\global\region\regioncheck==1
-	$swapvar =2
+if $\global\region\regioncheck == 1
+	$swapvar = 2
 endif
 ```
 The meaning of this code is that if the variable `$\global\region\regioncheck` return the value of 1 (correspond to the region written at the beginning of `Region.ini`) the character outfit variable will change to 2 (correspond to the outfit in folder with 2 in your merge mod folder).
@@ -106,7 +106,7 @@ You can consider removing the Key Detection code in the `merge.ini` file as it i
 key = y
 condition = $active == 1
 type = cycle
-$swapver = 0,1,2,3,4,5
+$swapver = 0, 1, 2, 3, 4, 5
 ...
 ```
 

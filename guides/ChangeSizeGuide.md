@@ -246,11 +246,10 @@ For example, if you decide to age character up, you will have to make their head
 ## Known issues
 
 - F6 is not gonna work anymore. All the modded characters are gonna look like spiky abominations in the F6 'mods off' mode, no matter if their size was changed or not.  
-**Solution**: Use Hold F9 + Num 0 instead. F6 has always been a questionable feature. It will be completely removed in the next version of GIMI.
-- *Outlines and reflections fix* for 3.0+ characters uses the same shader the resize and offset tool does.  
-**Solution**: mod texture by hash instead of ps-t values for 3.0+ characters.
+
 - We have to modify the face one way or another, either hide it or resize and offset it. The problem is that genshin charactres share their face parts between different characters. So when there are other characters on screen with a character that uses this tool, they can randomly have their face parts hidden/resized/offset. You are usually gonna see this in party screen, in the teapot and in coop.  
 **Solution**: There is no solution for this.
+
 - You are supposed to use IB hash for manipulations on the face parts, otherwise your game is gonna behave weird - it can freeze, UI elements can pop in and out of existence, you can see weird flashy artifacs here and there, etc.  
 **Solution**: don't use VB hashes for the face parts. Use their IB hashes instead.
 
