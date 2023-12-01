@@ -1,5 +1,5 @@
 # Preparation
-
+Guide written and original idea by [golanah921](https://gamebanana.com/members/2574517)
 - `Region.ini` file and a `working merge mod` are required, the file can be obtain via either by the original mod post on game banana or leotorrez’s github using the below URLs
 
     - Original post: https://gamebanana.com/tools/15459
