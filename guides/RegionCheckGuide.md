@@ -1,10 +1,17 @@
+# Preface 
+This guide explain how region detection works and provide the simplest way to make a region-based outfit swap. You can (and is encourage to) make more variation if you have a good understand of the coding progress.
+
 # Preparation
 Guide written and original idea by [golanah921](https://gamebanana.com/members/2574517)
 - `Region.ini` file and a `working merge mod` are required, the file can be obtain via either by the original mod post on game banana or leotorrez’s github using the below URLs
 
     - Original post: https://gamebanana.com/tools/15459
-    - leotorrez’s github: http://github.com/LeoTorreZ/LeoTools/guide/RegionCheckGuide.md
- - Merge mod can be made by either of the following tutorials, just make sure to use the naming format that will be elaborate later in this guide
+    - leotorrez’s github: http://github.com/LeoTorreZ/LeoTools/blob/main/guides/RegionCheckGuide.md
+
+- Region.ini
+    - Download link: [Region.ini](http://github.com/LeoTorreZ/LeoTools/blob/main/releases/Region.ini)
+
+- Merge mod can be made by either of the following tutorials, just make sure to use the naming format that will be elaborate later in this guide
     - [Video Tutorial by Kushala](https://www.youtube.com/watch?v=r-zddzU5fkg)
     - [Written Tutorial by the SilentnightSound (author of the merge script)](https://gamebanana.com/tools/11165)
 
@@ -13,12 +20,12 @@ Guide written and original idea by [golanah921](https://gamebanana.com/members/2
 - Put your merge mod anywhere in `/Mods` folder. (`Region.ini` is global so it will work regardless of where your mod is.)
 
 Name the merge mod sub folder with number in order of 0, 1, 2… format. This will help you know which value is correspond to which outfit later. 
-### IMPORTANT: Do this before creating a merge mod's merge.ini and not after else the merge mod won’t work.
+### IMPORTANT: Only rename your folder before creating a merge mod's merge.ini and not after else the merge mod won’t work.
 
 ![Merge Configuration](images/region1.png)  
 
 # How does region detection work?
-The region detection is done using region specific item (statue of seven, party setup screen, local specialty and local item) of each region and loading screen icon of each region. This means that sometime even if you have changed region, if you had not encounter an item listed above, the region detection will not identify as you having changed region.
+The region detection is done using region specific item (party setup screen, local specialty and local item) of each region and loading screen icon of each region. This means that sometime even if you have changed region, if you had not encounter an item listed above, the region detection will not identify as you having changed region.
 You can immediately get the correct region by using teleport to any location or open the party setup screen. 
 
 # Region variable
@@ -64,9 +71,9 @@ endif
 
 and so on for every region you want outfit change at.
 ```
-Assigns outfit to specific region.
+# Assigns outfit to specific region.
 
-Open your `merge.ini` and scroll down to the end you the [Present] section. Your code will be added there.
+Open your `merge.ini` and scroll down to the end of the [Present] section. Your code will be added there.
 
 ![Present Section](images/region2.png)  
 
@@ -76,7 +83,7 @@ if $\global\region\regioncheck == 1
 	$swapvar = 2
 endif
 ```
-The meaning of this code is that if the variable `$\global\region\regioncheck` return the value of 1 (correspond to the region written at the beginning of `Region.ini`) the character outfit variable will change to 2 (correspond to the outfit in folder with 2 in your merge mod folder).
+The meaning of this code is that if the variable `$\global\region\regioncheck` return the value equal to(symbol `==`) 1 (correspond to the region written at the beginning of `Region.ini`) the character outfit variable will change to 2 (correspond to the outfit in folder with 2 in your merge mod folder).
 You can change the number 1 and 2 to any number you want, as long as for the `$\global\region\regioncheck` the value is within what was specified at the beginning of `Region.ini` and for `$swapvar` the value is not outside of the number you assigned to the subfolder in your merge mod folder.
 For every region you want outfit change, repeat the code. You can skip a region if you don’t have a specific outfit to swap to.
 
@@ -102,7 +109,7 @@ You can consider removing the Key Detection code in the `merge.ini` file as it i
     
 ```ini  
 ...
-[KeyDetect]
+[KeySwap]
 key = y
 condition = $active == 1
 type = cycle
