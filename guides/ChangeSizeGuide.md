@@ -21,7 +21,7 @@ This is a guide for the tool that allows you to offset characters position and c
 
 ## Requirements
 
-- A fully working character mod
+- A fully working character or weapon mod
 - [Offset-Scale Changer](https://github.com/leotorrez/LeoTools/releases/tag/offsetchanger)  
 - [Multiply weight Python script](https://github.com/leotorrez/LeoTools/blob/main/multiplyweight.py)
 
@@ -35,7 +35,7 @@ I also recommend that you read the [restrictions](#restrictions) section first.
 - ***VERY IMPORTANT:*** If you want to age a character up or down, you need to change their proportions (head-to-body size ratio), unless you want to create a giant kid or a tiny adult. You will quickly notice that the face doesn't line up with the head. Adjusting it would require you to use different scaling values for the body and the face (e.g., 1.44 for the body and 0.9 for the face). You can offset both the face and the body if you don't resize them, but the math stops working properly if you do. Most of the time, you simply cannot use the same offset values for the face. Moreover, different scaling values result in a difference between the relative positions of the face and body pivot points compared to their default positions. Therefore, you might need to model a fake face for your character and place it in their body mesh. The downside is that they are going to lose their facial animations.
 - Resized characters use their original animations which vary for different body types/heights. For example, adult Nahida is still gonna run like a kid.
 - The game camera is going to remain where it was originally. For example, if you size a character up, their head is gonna be above the focal point of the camera. Alternatively, if you scale a character down, they are gonna be below the focal point of the camera. The same restriction applies to cutscenes.
-- Even though your character looks bigger/smaller, their skeleton remains the same. So your character's attacks are not going to reach further than they do originally. The same applies to climbing, swimming, etc. In other words, it does not alter gameplay in any way; it is purely a cosmetic change.
+- Even though your character looks bigger/smaller, their skeleton and hitboxes remains the same. So your character's attacks are not going to reach further than they do originally. The same applies to climbing, swimming, etc. In other words, it does not alter gameplay in any way; it is purely a cosmetic change.
 
 ## Blender setup
 
@@ -161,13 +161,13 @@ endif
 ```
 
 ### Replacing face
-We won't elaborate much on this section on the exact steps because there's several methos that could work even better than the one I use.
+We won't elaborate much on this section on the exact steps because there's several methods that could work even better than the one I use.
 
 However if you intend to hide the face and add your own into the body mesh, theres a few things to keep in mind. First of all you will lose in game facial animations. You can account for it with a universal rest pose or some animated mod that deals with it.
 
 The body shading is too complex for the style the face has, hence you need to get simplified normals on the face. Google the term for more info.
 
-Lastly. The eyes in genshin are actually hollow because of how their shaders are set up- HOWEVER we don't have the proper shading in body mesh. So you will have to think a way around it. I personally haven't found any good method so good luck on this and contact me if you find a decent method.
+Lastly, the eyes in genshin are actually hollow because of how their shaders are set up- HOWEVER we don't have the proper shading in body mesh. So you will have to think a way around it. I personally haven't found any good method so good luck on this and contact me if you find a decent method.
 ### Resizing face
 
 You don't need to resize the face if you hide it. But in case you don't - resizing is an option, although not recommended.
@@ -211,11 +211,15 @@ To offset the face, you need:
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
 ``` INI
 [Constants]
-$offset = *face_offset_value*
+global $active = 0
+global $offset = *face_offset_value*
+
+[Present]
+post $active = 0
 
 [TextureOverrideCharacterPosition]
-;initial overrides
-
+; hash = 
+;.......
 $active = 1
 $\global\offset\faceOffset = $offset
 
@@ -226,6 +230,40 @@ if $active == 1
 endif
 ...
 ```
+### Offsetting Weapon
+
+When offsetting weapons you are less restricted. You may use the same script to multiply a weapon's size by a value. As well as offsetting them even if the weapon is not modded.
+
+Is a good practice to limit offset weapons to a certain character.
+
+``` INI
+[Constants]
+global $active = 0
+global $offset = *weapon_offset_value*
+
+[Present]
+post $active = 0
+
+[TextureOverrideCharacterPosition]
+; hash =
+; ....
+$active = 1
+$\global\offset\offset = $offset
+
+[TextureOverrideWeaponIB]
+hash = xxxxxx ; example hash
+handling = skip
+drawindexed = auto
+
+[TextureOverrideWeaponHead] ;repeat for other parts if the weapon has them, such as Head, Body, Dress or Extra
+hash = xxxxxx ; example hash
+match_first_index = 0 
+if $active == 1
+    run = CommandList\global\offset\offset
+endif
+...
+```
+
 
 ## Quick Summary
 
@@ -246,12 +284,20 @@ For example, if you decide to age character up, you will have to make their head
 ## Known issues
 
 - F6 is not gonna work anymore. All the modded characters are gonna look like spiky abominations in the F6 'mods off' mode, no matter if their size was changed or not.  
+    
+    **Solution**: Holding f9 then tapping numpad 0 seems to be a suitable replacement that is not affected by any mod. You may release f9 after.
 
-- We have to modify the face one way or another, either hide it or resize and offset it. The problem is that genshin charactres share their face parts between different characters. So when there are other characters on screen with a character that uses this tool, they can randomly have their face parts hidden/resized/offset. You are usually gonna see this in party screen, in the teapot and in coop.  
-**Solution**: There is no solution for this.
+- We have to modify the face one way or another, either hide it or resize and offset it. The problem is that genshin charactres share their face parts between different characters. So when there are other characters on screen with a character that uses this tool, they can randomly have their face parts hidden/resized/offset. You are usually gonna see this in party screen, in the teapot and in coop. 
 
-- You are supposed to use IB hash for manipulations on the face parts, otherwise your game is gonna behave weird - it can freeze, UI elements can pop in and out of existence, you can see weird flashy artifacs here and there, etc.  
-**Solution**: don't use VB hashes for the face parts. Use their IB hashes instead.
+    **Solution**: There is no solution for this.
+
+- You are supposed to use IB hash for manipulations on the face parts, otherwise your game is gonna behave weird - it can freeze, UI elements can pop in and out of existence, you can see weird flashy artifacs here and there, etc. 
+
+    **Solution**: don't use VB hashes for the face parts. Use their IB hashes instead.
+
+- Characters and weapons look "fuzzy".
+
+    **Solution:** Turning off motion blur and using high render resolution can reduce the issue enough to make it unnoticeable. However the issue has not been properly fixed yet. It needs more research, contact me in any social if you wanna help out.
 
 ## INI samples
 
@@ -264,7 +310,7 @@ You can place all the offset calculations in their own CommandList and call it f
 ``` INI
 [Constants]
 global $active = 0
-global $offset=-0.45
+global $offset = -0.45
 
 [Present]
 post $active = 0
@@ -281,17 +327,20 @@ run = CommandListOffset
 
 [TextureOverrideShenheFaceIB1]
 hash = 7b61f273
+match_priority = 1 ; removes face modding conflict warnings
 if $active == 1
     run = CommandList\global\offset\OffsetFace
 endif
 
 [TextureOverrideShenheFaceIB2]
 hash = dc710a44
+match_priority = 1 
 if $active == 1
     run = CommandList\global\offset\OffsetFace
 endif
 [TextureOverrideShenheFaceIB3]
 hash = f931161a
+match_priority = 1 
 if $active == 1
     run = CommandList\global\offset\OffsetFace
 endif
@@ -350,6 +399,7 @@ This is a separate INI file to hide Nahida's face in Leo's 'Rukkhadevata over Na
 ``` INI
 [Constants]
 global $active = 0
+
 [Present]
 post $active = 0
 
@@ -357,26 +407,68 @@ post $active = 0
 hash = 37ef15ec
 $active = 1
 match_priority = 1 ;Needed to eliminate the conflict with the main ini file because of the same hash override in there
+
 [TextureOverrideFace1] 
 hash = 46343c52
+match_priority = 1 
 if $active == 1
-    $\global\ORFix\active = 0
     handling = skip
 endif
 
 [TextureOverrideFace2]
 hash = 17b3e07a
+match_priority = 1 
 if $active == 1
-    $\global\ORFix\active = 0
     handling = skip
 endif
 
 [TextureOverrideFace3]
 hash = 7fc58760
+match_priority = 1 
 if $active == 1
-    $\global\ORFix\active = 0
     handling = skip
 endif
 ```
 
 You can remove `$\global\ORFix\active = 0` if it causes issues.
+
+### Offsetting Festering Desire for Furina
+
+```ini
+; Constants -------------------------
+[Constants]
+global $active = 0
+global $offset = 0.1
+
+[Present]
+post $active = 0
+
+; Overrides -------------------------
+
+[TextureOverrideFurinaPosition]
+hash = 8294fe98
+match_priority = 123
+$active = 1
+
+[TextureOverrideFesteringDesire]
+hash = 5107fe33
+vb0 = ResourceFesteringDesire
+
+[TextureOverrideFesteringDesireIB]
+hash = caa58be1
+handling = skip
+drawindexed = auto
+
+[TextureOverrideFesteringDesireHead]
+hash = caa58be1
+match_first_index = 0
+ib = ResourceFesteringDesireHeadIB
+ps-t0 = ResourceFesteringDesireHeadDiffuse
+ps-t1 = ResourceFesteringDesireHeadLightMap
+$\global\offset\offset = $offset
+run = CommandList\global\offset\offset
+...
+```
+
+The value for offset can be set in another mod- such as a `merge.ini` and then be accessed via namespace from their weapon mod. This is more dynamic and advanced but way more powerful for when you want to use the same offset value for multiple mods and have it change on certain conditions. 
+Read more about `namespaces` at: https://github.com/leotorrez/GI-Model-Importer/wiki
