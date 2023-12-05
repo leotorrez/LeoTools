@@ -19,7 +19,8 @@ Guide written and original idea by [golanah921](https://gamebanana.com/members/2
 - Put your `Region.ini` file in the folder `/Mods/BufferValues` to ensure you only have 1 copy of this file in your `/Mods` folder and to make it easier to update in the future.
 - Put your merge mod anywhere in `/Mods` folder. (`Region.ini` is global so it will work regardless of where your mod is.)
 
-Name the merge mod sub folder with number in order of 0, 1, 2… format. This will help you know which value is correspond to which outfit later. 
+Name the merge mod sub folder to begin with number in order of 0, 1, 2… format (if your naming reach two digits, name them as 00, 01, 02...10...). This will help you know which value is correspond to which outfit later.
+
 ### IMPORTANT: Only rename your folder before creating a merge mod's merge.ini and not after else the merge mod won’t work.
 
 ![Merge Configuration](images/region1.png)  
