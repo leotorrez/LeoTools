@@ -1,15 +1,9 @@
-# 4.2 NEWS
-- ORFix and offset have been fixed for the current version.
-- Offset fix is no longer backward compatible with pre-4.1 if you play an older version get 2.3 or below.
-Your mods need to have `drawindexed = auto` within their IB block to work with the new offset fix.
+# 4.3 NEWS
+- Offset.ini has been patched and 2 shaderfixes added. Please update your files accordingly.
+- ORFix.ini seems to be fine.
+- Yelan Dash has a little error, might wait on that one a bit to prioritize other fixes.
+- Most mods broke for the game, general fix at: https://gamebanana.com/tools/15654
 
-Example:
-```
-[TextureOverrideShenheIB]
-hash = 0b7d4e4d
-handling = skip
-drawindexed = auto
-```
 
 # LeoTools
 Modding tools for GIMI, SRMI and HIMI (Most likely applicable to 3dmigoto modding in general yet not directly supported)
