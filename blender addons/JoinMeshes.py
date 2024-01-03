@@ -533,11 +533,11 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
 
         # apply modifiers
         for obj in objs:
-            with context.temp_override(active_object=obj, selected_editable_objects=[obj]):
-                for modifier in obj.modifiers:
-                    if not modifier.show_viewport:
-                        obj.modifiers.remove(modifier)
-                    else:
+            for modifier in obj.modifiers:
+                if not modifier.show_viewport:
+                    obj.modifiers.remove(modifier)
+                else:
+                    with context.temp_override(active_object=obj, selected_editable_objects=[obj]):
                         bpy.ops.object.modifier_apply(modifier=modifier.name)
 
         # join stuff
