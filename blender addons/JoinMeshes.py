@@ -533,16 +533,23 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
 
         # apply modifiers
         for obj in objs:
+            print(f"Applying modifiers for {obj.name}")
             for modifier in obj.modifiers:
+                print(f"Modifier: {modifier.name}")
                 if not modifier.show_viewport:
                     obj.modifiers.remove(modifier)
                 else:
-                    with context.temp_override(active_object=obj, selected_editable_objects=[obj]):
-                        bpy.ops.object.modifier_apply(modifier=modifier.name)
+                    bpy.ops.object.select_all(action='DESELECT')
+                    obj.select_set(True)
+                    context.view_layer.objects.active = obj
+                    bpy.ops.object.modifier_apply(modifier=modifier.name)
 
         # join stuff
-        with context.temp_override(active_object=target_obj, selected_editable_objects=objs):
-            bpy.ops.object.join()
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in objs:
+            obj.select_set(True)
+        context.view_layer.objects.active = target_obj
+        bpy.ops.object.join()
 
         # Remove all vertex groups with the word MASK on them
         vgs = [vg for vg in target_obj.vertex_groups if vg.name.find("MASK") != -1]
@@ -721,10 +728,10 @@ def unregister():
 if __name__ == "__main__":
     register()
 #debug shenanigans:
-# try:
-#     unregister()
-# except Exception:
-#     pass
-# finally:
-#     print('testmodeon')
-#     register()
+try:
+    unregister()
+except Exception:
+    pass
+finally:
+    print('testmodeon')
+    register()
