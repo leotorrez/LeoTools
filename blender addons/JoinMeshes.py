@@ -728,10 +728,10 @@ def unregister():
 if __name__ == "__main__":
     register()
 #debug shenanigans:
-try:
-    unregister()
-except Exception:
-    pass
-finally:
-    print('testmodeon')
-    register()
+# try:
+#     unregister()
+# except Exception:
+#     pass
+# finally:
+#     print('testmodeon')
+#     register()
