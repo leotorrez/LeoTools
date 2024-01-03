@@ -1,5 +1,6 @@
 '''Join Meshes is a script to enhance XXMI mod making workflows.'''
 import os
+import shutil
 import subprocess
 import re
 import threading
@@ -245,6 +246,7 @@ class OutputFileSelector(bpy.types.Operator, ExportHelper):
                 return {'CANCELLED'}
         self.properties.filepath = userpath
         context.scene.my_tool.OutputFile = self.properties.filepath
+        bpy.ops.ed.undo_push(message="Join Meshes: output selected")
         return{'FINISHED'}
 class WMFileSelector(bpy.types.Operator, ExportHelper):
     """Export single mod based on current frame"""
@@ -257,18 +259,15 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
         description='''Sets the export name equal to the foldername you are exporting to.
                     Keep true unless you have changed the names''',
         default=True,)
-    ignore_hidden : bpy.props.BoolProperty(name="Ignore hidden objects",
-        description="Does not use objects in the Blender window that are hidden while exporting mods",
-        default=True,)
-    only_selected : bpy.props.BoolProperty(name="Only export selected",
+    ignore_hidden : bpy.props.BoolProperty(name="Ignore hidden objects", default=True,
+        description="Does not use objects in the Blender window that are hidden while exporting mods",)
+    only_selected : bpy.props.BoolProperty(name="Only export selected", default=False,
         description="Uses only the selected objects when deciding which meshes to export",
-        default=False,)
-    no_ramps : bpy.props.BoolProperty(name="Ignore shadow ramps/metal maps/diffuse guide",
-        description="Skips exporting shadow ramps, metal maps and diffuse guides",
-        default=True,)
-    delete_intermediate : bpy.props.BoolProperty(name="Delete intermediate files",
-        description="Deletes the intermediate vb/ib files after a successful export to reduce clutter",
-        default=True,)
+        )
+    no_ramps : bpy.props.BoolProperty(name="Ignore shadow ramps/metal maps/diffuse guide", default=False,
+        description="Skips exporting shadow ramps, metal maps and diffuse guides",)
+    delete_intermediate : bpy.props.BoolProperty(name="Delete intermediate files", default=False,
+        description="Deletes the intermediate vb/ib files after a successful export to reduce clutter",)
     credit : bpy.props.StringProperty(name="Credit",default='',
         description='''Name that pops up on screen when mod is loaded.
                     If left blank, will result in no pop up''',)
@@ -292,7 +291,7 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
     nearest_edge_distance : bpy.props.FloatProperty(name="Distance:", default=0.001,
                                                     soft_min=0, precision=4,
         description="Expand grouping for edge vertices within this radial distance to close holes in the edge outline. Requires rounding",)
-    
+
     def draw(self, context):
         layout = self.layout
         col = layout.column(align=True)
@@ -343,6 +342,7 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
         context.scene.my_tool.detect_edges = self.properties.detect_edges
         context.scene.my_tool.calculate_all_faces = self.properties.calculate_all_faces
         context.scene.my_tool.nearest_edge_distance = self.properties.nearest_edge_distance
+        bpy.ops.ed.undo_push(message="Join Meshes: dump selected")
         return{'FINISHED'}
 class ExecuteAuxClassOperator(bpy.types.Operator):
     """Operator to execute the auxClass"""
@@ -356,8 +356,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         self.timer = None
         self.done = False
         self.max_step = None
-        self.timer_count = 0 # timer count, need to let a little bit of space 
-                             # between updates otherwise gui will not have time to update
+        self.timer_count = 0
 
     def modal(self, context, event):
         if not self.done:
@@ -390,14 +389,14 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
     def invoke(self, context, event):
         self.operations = []
         self.operations.append(
-            {'label': "Exporting...", 'func': self.exportinggg, 'args': (context,)})
+            {'label': "Exporting...", 'func': self.exporting_process, 'args': (context,)})
         if self.max_step is None:
             self.max_step = len(self.operations)
         context.window_manager.modal_handler_add(self)
         self.timer = context.window_manager.event_timer_add(0.1, window=context.window)
         return {'RUNNING_MODAL'}
 
-    def exportinggg(self, context):
+    def exporting_process(self, context):
         '''Second process to export mod'''
         try:
             if context.active_object.mode != "OBJECT":
@@ -482,14 +481,14 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                                         fmt_path, my_tool.use_foldername,
                                         my_tool.ignore_hidden, my_tool.only_selected,
                                         my_tool.no_ramps, my_tool.delete_intermediate,
-                                        my_tool.credit,outline_properties,
+                                        my_tool.credit, outline_properties,
                                         star_rail=my_tool.star_rail)
             else:
                 export_3dmigoto_genshin(self, bpy.context, object_name, vb_path, ib_path,
                                         fmt_path, my_tool.use_foldername,
                                         my_tool.ignore_hidden, my_tool.only_selected,
                                         my_tool.no_ramps, my_tool.delete_intermediate,
-                                        my_tool.credit,outline_properties)
+                                        my_tool.credit, outline_properties)
         except Exception as e:
             self.report({'ERROR'}, f"Error exporting frame: {e}")
         finally:
@@ -501,17 +500,9 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         src_file = ""
         dest_file = ""
         try:
-            if os.path.exists(dest):
-                print(f"Overwriting files at {dest}")
-                for root, dirs, files in os.walk(src):
-                    for file in files:
-                        src_file = os.path.join(root, file)
-                        dest_file = os.path.join(dest, file)
-                        if os.path.exists(dest_file):
-                            os.remove(dest_file)
-                        os.rename(src_file, dest_file)
-            else:
-                os.rename(src, dest)
+            print(f"Moving files to {dest}")
+            shutil.copytree(src, dest, dirs_exist_ok=True)
+            shutil.rmtree(src)
         except Exception as e:
             self.report({'ERROR'}, f"Error moving file {src_file} to {dest_file}. Error: {e}")
             return {'CANCELLED'}
@@ -530,6 +521,8 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         objects_to_join = []
         if collection_name is not None:
             self.appendto(bpy.data.collections[collection_name.name], objects_to_join)
+        objects_to_join = [obj for obj in objects_to_join 
+                           if obj.type == "MESH" and obj.visible_get()]
         objs = objects_to_join
         objs.append(target_obj)
 
@@ -661,9 +654,8 @@ class MY_OT_ExecuteScriptBatchOperator(Operator):
         '''Second process to run the scripts'''
         scn = bpy.context.scene
         my_tool = scn.my_tool
-        object_name = os.path.basename(os.path.dirname(my_tool.ExportFile))
-        cwd = f"{my_tool.OutputFile}\\{object_name}Mod"
-        if not os.path.isdir(cwd):
+        cwd = my_tool.OutputFile
+        if cwd == '' or not os.path.isdir(cwd):
             cwd = f"{os.path.dirname(my_tool.ExportFile)}Mod"
 
         total = len(scn.script_list)
@@ -673,19 +665,24 @@ class MY_OT_ExecuteScriptBatchOperator(Operator):
             res = []
             for i in range(1, len(args), 2):
                 res.append(args[i] +' '+ args[i+1].strip())
-            args = res
+            args = [arg.strip() for arg in res]
             print(f"Current working directory: {cwd}")
             try:
                 print(f"Running {item.name} with arguments {args}")
                 # might need to use py or python3 sometimes :fallenqiqi:
-                file_process = subprocess.Popen(["python", item.name] + args, stdin=subprocess.PIPE, cwd=cwd)
+                file_process = subprocess.Popen(["python", item.name] + args,
+                                                stdin=subprocess.PIPE, cwd=cwd)
                 file_process.communicate(input=b"\n")
                 file_process.wait()
+                stderr = file_process.communicate()[1]
+                if stderr:
+                    raise Exception(stderr.decode())
                 scripts_ran += 1
-                self.report({'INFO'}, f"({scripts_ran}/{total})Script {item.name} executed successfully")
-
+                self.report({'INFO'},
+                            f"({scripts_ran}/{total})Script {item.name} executed successfully")
             except Exception as e:
-                self.report({'ERROR'}, f"Error running {item.name}. Check console for more information({e})")
+                self.report({'ERROR'},
+                            f"Error running {item.name}. Check console for more information({e})")
                 return {'CANCELLED'}
         self.finished = True
         self.report({'INFO'}, "ALL Scripts executed successfully!!!")
@@ -722,6 +719,3 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-
-
-# FIXME: exports hidden

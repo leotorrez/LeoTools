@@ -89,7 +89,8 @@ def speed_ini(file, sfa, efa):
 global $frameStart= {sfa}
 global $frameEnd = {efa}
 global $swapvar = 0
-global $ActiveCharacter = 0
+global $active = 0
+global $creditinfo = 0
 
 '''
         fc.insert(6, '''[Present]
