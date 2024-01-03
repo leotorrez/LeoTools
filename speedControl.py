@@ -1,17 +1,22 @@
+'''V 3.0
+Speed Control for GI Model Importer mods.'''
+
 import os
 import re
-import configparser
 import argparse
 
-ini_file = "merged.ini"
+INI_FILE = "merged.ini"
+NEW_INI = "Animation.ini"
+sfa, efa = 0, 60
 rNum = 0
 
-# Diabling the OLD ini
 def dis_ini(file):
+    '''Disables the OLD ini by renaming it to DISABLEDmerged.ini'''
     print("Cleaning up and disabling the OLD STINKY ini")
     os.rename(file, os.path.join(os.path.dirname(file), "DISABLED") + os.path.basename(file))
 
 def remER(cln):
+    '''Removes all the resources that are not used in the animation'''
     patternDi = re.compile(r"\[Resource(\w+)Diffuse")
     patternLi = re.compile(r"\[Resource(\w+)LightMap")
     patternMi = re.compile(r"\[Resource(\w+)MetalMap")
@@ -25,21 +30,21 @@ def remER(cln):
                 cln[i], cln[i + 1] = "", ""
 
 def textOP(block, si, ei):
+    '''Adds the text patch to the animation'''
     corPatch = "if $swapvar >= $frameStart && $swapvar <= $frameEnd\n"
     global rNum
     for i in range(si + 3, ei):
         if "else if $swapva" in block[i]:
             break
         corPatch += f"{block[i]}"
-
     for i in range(si, ei):
         if "ps-t" in block[i]:
             block[i] = ""
-    block[si] += f"{corPatch}\nendif\n"
+    block[si] += f"{corPatch}endif\n"
     rNum = corPatch.split(".")[1][0]
 
-
 def text_ini(file):
+    '''Adds the text patch to the animation'''
     fc = []
     patternH = re.compile(r"\[CommandList(\w+)Head")
     patternB = re.compile(r"\[CommandList(\w+)Body")
@@ -49,41 +54,28 @@ def text_ini(file):
     with open(file, "r", encoding="utf-8") as f:
         fc = f.readlines()
         flagen = ""
-        
-        for i in range(0, len(fc)):
-            if patternH.match(fc[i]) != None and "Face" not in fc[i]:
-                #print("head",fc[i],i)
+        for i, line in enumerate(fc):
+            if patternH.match(line) and "Face" not in line:
                 flagen = "head"
                 si = i
-            elif patternB.match(fc[i]) != None:
-                #print("body",fc[i],i)
+            elif patternB.match(line):
                 flagen = "body"
                 si = i
-            elif patternD.match(fc[i]) != None:
-                #print("dress",fc[i],i)
+            elif patternD.match(line):
                 flagen = "dress"
                 si = i
-            elif patternE.match(fc[i]) != None:
-                #print("extra",fc[i],i)
+            elif patternE.match(line):
                 flagen = "extra"
                 si = i
-            elif "endif" in fc[i] and flagen != "":
+            elif "endif" in line and flagen != "":
                 textOP(fc, si, i)
                 flagen = ""
-                
-#        for i in range(5, DelIndex - 1):
-#             fc.pop(5)
-#        fc[5] = f'global $speed = 0.5\nglobal $frameStart= 0\nglobal $frameEnd = 60\nglobal $swapvar = 0\nglobal $auxTime = 0\n\n'
-#        fc.insert(6, f'[Present]\nif $auxTime % $speed == 0\n    if $swapvar < $frameEnd\n        $swapvar = $swapvar + 1\n    else\        $swapvar = $frameStart\n    endif\nendif\nif $auxTime >= 1000\n    post $auxTime = $auxTime - 1000\nelse\n    post $auxTime= $auxTime + 1\nendif\n\n')
-
     remER(fc)
-
-    with open('0.ini', "w", encoding="utf-8") as f:
+    with open(NEW_INI, "w", encoding="utf-8") as f:
         f.writelines(fc)
 
-
-
 def speed_ini(file, sfa, efa):
+    '''Adds the speed control to the animation'''
     fc = []
     with open(file, "r", encoding="utf-8") as f:
         fc = f.readlines()
@@ -93,20 +85,36 @@ def speed_ini(file, sfa, efa):
                     break
         for i in range(5, DelIndex - 1):
              fc.pop(5)
-        fc[5] = f'global $speed = 2\nglobal $frameStart= {sfa}\nglobal $frameEnd = {efa}\nglobal $swapvar = 0\nglobal $swapvarAux = 0\nglobal $auxTime = 0\n\n'
-        fc.insert(6, f'[Present]\nif ($swapvarAux + (1/$speed)) < $frameEnd\n    $swapvarAux = $swapvarAux + (1/$speed)\nelse\n    $swapvarAux = $frameStart\nendif\n$swapvar=$swapvarAux//1\n')        
-    dis_ini(ini_file)
-    with open('0.ini', "w", encoding="utf-8") as f:
+        fc[5] = f'''global $fps = 60
+global $frameStart= {sfa}
+global $frameEnd = {efa}
+global $swapvar = 0
+global $ActiveCharacter = 0
+
+'''
+        fc.insert(6, '''[Present]
+$swapvar = (time * $fps % ($frameEnd - $frameStart + 1) + $frameStart) // 1
+
+''')        
+    dis_ini(INI_FILE)
+    with open(NEW_INI, "w", encoding="utf-8") as f:
         f.writelines(fc)
 
-parser = argparse.ArgumentParser(description="Modifies the auto-generated merged.ini to apply patches needed for animation")
-parser.add_argument("-s", "--startFrame", type=int, help="The starting frame")
-parser.add_argument("-e", "--endFrame", type=int, help="The ending frame")
-args = parser.parse_args()
-sfa, efa = 0, 60
-if args.startFrame:
-    sfa = args.startFrame
-if args.endFrame:
-    efa = args.endFrame
-speed_ini(ini_file, sfa, efa)
-text_ini("0.ini")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Modifies the auto-generated merged.ini to apply patches needed for animation")
+    parser.add_argument("-s", "--startFrame", type=int, help="The starting frame")
+    parser.add_argument("-e", "--endFrame", type=int, help="The ending frame")
+    parser.add_argument("-f", "--file", type=str, help="The file to be modified")
+    parser.add_argument("-o", "--output", type=str, help="The output file")
+    args = parser.parse_args()
+    if args.startFrame:
+        sfa = args.startFrame
+    if args.endFrame:
+        efa = args.endFrame
+    if args.file:
+        INI_FILE = args.file
+    if args.output:
+        NEW_INI = args.output
+    speed_ini(INI_FILE, sfa, efa)
+    text_ini(NEW_INI)
