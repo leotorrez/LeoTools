@@ -3,21 +3,18 @@ import os
 import shutil
 import subprocess
 import re
-import threading
 from threading import Timer
-from typing import Set
 
 import bpy
 from bpy.utils import register_class, unregister_class
 from bpy.props import IntProperty, StringProperty
-from bpy.types import Context, Event, UIList, PropertyGroup, Operator
+from bpy.types import Context, UIList, PropertyGroup, Operator
 from bpy_extras.io_utils import ExportHelper
 IS_SRMI = True
 try:
-    from blender_3dmigoto_srmi import export_3dmigoto_genshin, Fatal
+    from blender_3dmigoto_srmi import export_3dmigoto_genshin
 except ModuleNotFoundError as err:
-    from blender_3dmigoto_gimi import export_3dmigoto_genshin, Fatal
-    print("Couldn't find blender_3dmigoto_srmi, using blender_3dmigoto_gimi instead")
+    from blender_3dmigoto_gimi import export_3dmigoto_genshin
     IS_SRMI = False
 
 bl_info = {
@@ -184,7 +181,6 @@ class MY_PT_SelectStuffPanel(MainPanel, bpy.types.Panel):
                     ).url = "github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md"
 
     def draw(self, context):
-        #TODO: add disabled effect when is exporting
         layout = self.layout
         obj = context.object
         scene = context.scene
@@ -345,12 +341,12 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
         bpy.ops.ed.undo_push(message="Join Meshes: dump selected")
         return{'FINISHED'}
 class ExecuteAuxClassOperator(bpy.types.Operator):
-    """Operator to execute the auxClass"""
-    bl_idname = "my.execute_auxclass_aux"
+    """Export operation base class"""
+    bl_idname = "my.execute_auxclass"
     bl_label = "Export Mod Aux"
     bl_description = "Export mod as a single mesh"
     bl_options = {'REGISTER'}
-    operations=[]
+    operations = []
     def __init__(self):
         self.step = 0
         self.timer = None
@@ -360,7 +356,9 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if not self.done:
-            context.object.progress = ((self.step+1)/(self.max_step))*100
+            context.object.progress = ((self.step+1)/(self.max_step))*100 - 1
+            if context.object.progress < 0:
+                context.object.progress = 0
             context.object.progress_label = self.operations[self.step]['label']
             context.area.tag_redraw()
 
@@ -561,9 +559,6 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
             if obj.type == "MESH" and obj.visible_get():
                 return False
         return True
-class MY_OT_ExecuteAuxClassOperator(ExecuteAuxClassOperator):
-    bl_idname = "my.execute_auxclass"
-    bl_label = "Export Mod"
 class ExportAnimationOperator(ExecuteAuxClassOperator):
     """Export animation as a mod"""
     bl_idname = "my.exportanimation"
@@ -624,6 +619,7 @@ class CUSTOM_UL_items(UIList):
         split.label(text=item.arguments)
 
     def invoke(self, context, event):
+        '''Invoke the UIList'''
         pass
 class MY_OT_ExecuteScriptBatchOperator(Operator):
     """Operator to execute the scripts in my_tool.script_list using dump folder as cwd"""
@@ -691,9 +687,8 @@ class MY_OT_ExecuteScriptBatchOperator(Operator):
 classes = (CUSTOM_objectCollection, CUSTOM_OT_scriptselector,
         CUSTOM_OT_actions, MyProperties,
         MY_PT_SelectStuffPanel, ExecuteAuxClassOperator,
-        MY_OT_ExecuteAuxClassOperator, MY_OT_ExecuteScriptBatchOperator,
-        WMFileSelector, ExportAnimationOperator,
-        OutputFileSelector, CUSTOM_UL_items)
+        MY_OT_ExecuteScriptBatchOperator, WMFileSelector,
+        ExportAnimationOperator, OutputFileSelector, CUSTOM_UL_items)
 
 def register():
     '''Register all classes'''
