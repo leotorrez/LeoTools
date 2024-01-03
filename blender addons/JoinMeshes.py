@@ -550,6 +550,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
             obj.select_set(True)
         context.view_layer.objects.active = target_obj
         bpy.ops.object.join()
+        target_obj.data = bpy.context.object.data
 
         # Remove all vertex groups with the word MASK on them
         vgs = [vg for vg in target_obj.vertex_groups if vg.name.find("MASK") != -1]
@@ -727,7 +728,7 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-#debug shenanigans:
+
 # try:
 #     unregister()
 # except Exception:
