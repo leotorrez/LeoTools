@@ -33,7 +33,6 @@ class MainPanel:
     bl_region_type = "UI"
     bl_category = "LeoTools"
 class CUSTOM_objectCollection(PropertyGroup):
-    #name: StringProperty() -> Instantiated by default
     obj_type: StringProperty()
     obj_id: IntProperty()
     arguments: StringProperty()
@@ -173,6 +172,10 @@ class MY_PT_SelectStuffPanel(MainPanel, bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
     bl_idname = "MY_PT_SelectStuffPanel"
     bl_label = "Select Stuff Here you dummy :3"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "LeoTools"
+    bl_context = "objectmode"
 
     def draw_header(self, context: Context):
         layout = self.layout
@@ -182,7 +185,6 @@ class MY_PT_SelectStuffPanel(MainPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        obj = context.object
         scene = context.scene
         my_tool = context.scene.my_tool
         split = layout.split(factor=0.75)
@@ -194,19 +196,19 @@ class MY_PT_SelectStuffPanel(MainPanel, bpy.types.Panel):
         col_2.operator("output.selector", icon="FILE_FOLDER", text="")
         layout.separator()
         row = layout.row()
-        if obj.progress:
+        if scene.progress:
             progress_bar = layout.row()
-            progress_bar.prop(bpy.context.object,"progress")
+            progress_bar.prop(bpy.context.scene,"progress")
             progress_lbl = layout.row()
             progress_lbl.active = False
-            progress_lbl.label(text=bpy.context.object.progress_label)
+            progress_lbl.label(text=scene.progress_label)
         else:
             if IS_SRMI is True:
                 row.prop(my_tool, "star_rail")
                 row = layout.row()
             row.operator("my.exportanimation", text="Export Animation")
             row.operator_context = "INVOKE_DEFAULT"
-            row.operator("my.execute_auxclass", text="Export Mod")
+            row.operator("my.export", text="Export Mod")
         # ---------------------------------- SCRIPTS PANEL ----------------------------------
         row = layout.row()
         row.label(text="Scripts for post-processing:")
@@ -342,7 +344,7 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
         return{'FINISHED'}
 class ExecuteAuxClassOperator(bpy.types.Operator):
     """Export operation base class"""
-    bl_idname = "my.execute_auxclass"
+    bl_idname = "my.execute_class"
     bl_label = "Export Mod Aux"
     bl_description = "Export mod as a single mesh"
     bl_options = {'REGISTER'}
@@ -356,10 +358,10 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if not self.done:
-            context.object.progress = ((self.step+1)/(self.max_step))*100 - 1
-            if context.object.progress < 0:
-                context.object.progress = 0
-            context.object.progress_label = self.operations[self.step]['label']
+            context.scene.progress = ((self.step+1)/(self.max_step))*100 - 1
+            if context.scene.progress < 0:
+                context.scene.progress = 0
+            context.scene.progress_label = self.operations[self.step]['label']
             context.area.tag_redraw()
 
         #by running a timer at the same time of our modal operator
@@ -372,7 +374,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                 self.timer_count=0
                 if self.done:
                     self.step = 0
-                    context.object.progress = 0
+                    context.scene.progress = 0
                     context.window_manager.event_timer_remove(self.timer)
                     context.area.tag_redraw()
                     return {'FINISHED'}
@@ -397,9 +399,6 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
     def exporting_process(self, context):
         '''Second process to export mod'''
         try:
-            if context.active_object.mode != "OBJECT":
-                self.report({'ERROR'}, "Please change to object mode before running")
-                return {'CANCELLED'}
             self.exportframe(context, None)
             my_tool = context.scene.my_tool
             if my_tool.OutputFile != "":
@@ -573,11 +572,8 @@ class ExportAnimationOperator(ExecuteAuxClassOperator):
         total = frame_end - frame_start + 1
         self.operations = []
         for f in range(frame_start, frame_end + 1):
-            self.operations.append(
-                {'label': f"Exporting frame {f}/{total}", 'func': self.frame, 'args': (context, f, total)})
-        if context.active_object.mode != "OBJECT":
-            self.report({'ERROR'}, "Please change to object mode before running")
-            return {'CANCELLED'}
+            self.operations.append({'label': f"Exporting frame {f}/{total}",
+                                    'func': self.frame, 'args': (context, f, total)})
         if self.max_step is None:
             self.max_step = len(self.operations)
         print("Starting animation exporting Loop")
@@ -683,12 +679,22 @@ class MY_OT_ExecuteScriptBatchOperator(Operator):
         self.finished = True
         self.report({'INFO'}, "ALL Scripts executed successfully!!!")
         return {'FINISHED'}
+class ExportModOperator(ExecuteAuxClassOperator):
+    bl_idname = "my.export"
+    bl_label = "Export Mod"
+    bl_description = "Export mod as a single mesh"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        bpy.ops.my.execute_class('INVOKE_DEFAULT')
+        return {'FINISHED'}
 
 classes = (CUSTOM_objectCollection, CUSTOM_OT_scriptselector,
         CUSTOM_OT_actions, MyProperties,
-        MY_PT_SelectStuffPanel, ExecuteAuxClassOperator,
+        MY_PT_SelectStuffPanel, 
+        ExecuteAuxClassOperator, ExportModOperator,
         MY_OT_ExecuteScriptBatchOperator, WMFileSelector,
-        ExportAnimationOperator, OutputFileSelector, CUSTOM_UL_items)
+        ExportAnimationOperator, OutputFileSelector,CUSTOM_UL_items)
 
 def register():
     '''Register all classes'''
@@ -698,14 +704,14 @@ def register():
     bpy.types.Scene.script_list = bpy.props.CollectionProperty(type=CUSTOM_objectCollection)
     bpy.types.Scene.script_index = IntProperty(name="Index for script_list",
                                                default=0, min=0, max=1000)
-    bpy.types.Object.progress = bpy.props.FloatProperty(name="Progress", subtype="PERCENTAGE",
+    bpy.types.Scene.progress = bpy.props.FloatProperty(name="Progress", subtype="PERCENTAGE",
                                                     soft_min=0, soft_max=100, precision=0,)
-    bpy.types.Object.progress_label = bpy.props.StringProperty()
+    bpy.types.Scene.progress_label = bpy.props.StringProperty()
 
 def unregister():
     '''Unregister all classes'''
-    del bpy.types.Object.progress_label
-    del bpy.types.Object.progress
+    del bpy.types.Scene.progress_label
+    del bpy.types.Scene.progress
     del bpy.types.Scene.my_tool
     del bpy.types.Scene.script_list
     del bpy.types.Scene.script_index
@@ -714,3 +720,11 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+#debug shenanigans:
+# try:
+#     unregister()
+# except Exception:
+#     pass
+# finally:
+#     print('testmodeon')
+#     register()
