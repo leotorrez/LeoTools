@@ -420,6 +420,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         dir_path = os.path.dirname(my_tool.ExportFile)
         object_name = os.path.basename(dir_path)
         try:
+            # List collections to join and containers
             mainobjects = [obj.name for obj in scene.objects
                            if obj.name.lower().startswith(object_name.lower())
                            and obj.visible_get() and obj.type == "MESH"]
@@ -428,17 +429,28 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                 for obj in mainobjects:
                     if obj.lower().startswith(col.name.lower()):
                         collectionstojoin[obj] = col.name
+
+            # Sanity checks
             for obj in mainobjects:
                 for key, col in collectionstojoin.items():
                     if obj in bpy.data.collections[col].objects:
-                        self.report({"ERROR"}, f"Container {obj} is in collection {col}. This can cause unpredictable results. Please remove it from the collection before continuing.")
-                        return {'CANCELLED'}
+                        raise Exception(f"Container {obj} is in collection {col}. This can cause unpredictable results. Please remove it from the collection before continuing.")
 
-            # Make Single use everything to avoid linked data issues
+            #TODO: add check to make sure the person has the right amount of objects to export. 
+            #errors caused by this mean that things starting with object can break the export without throwing error.
+            obj_in_col = []
+            for key,col in collectionstojoin.items():
+                obj_in_col += [obj for obj in bpy.data.collections[col].objects]
+            obj_in_fault = [obj for obj in obj_in_col
+            if obj.type == "MESH" and obj.visible_get() and obj.name.lower().startswith(object_name.lower())]
+            if len(obj_in_fault) > 0:
+                raise Exception(f"There is objects starting with {object_name} inside the collections. This can cause unpredictable results. Please rename them to something else to avoid conflicts.")
+
+            # Deselect. Make Single use everything to avoid linked data issues
             bpy.ops.object.select_all(action='DESELECT')
             bpy.ops.object.make_single_user(type='ALL', object=True, obdata=True,
                                             animation=True, obdata_animation=True)
-
+            # Join meshes
             topop = []
             for obj, col in collectionstojoin.items():
                 if self.is_collection_empty(bpy.data.collections[col]):
@@ -447,10 +459,10 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                     self.join_into(context, bpy.data.collections[col], obj)
                 topop.append(obj)
 
+            # Debugging
             for obj in topop:
                 collectionstojoin.pop(obj)
                 mainobjects.remove(obj)
-
             if len(mainobjects) > 0:
                 print("Warning: some objects were ignored. or had no match.")
                 print("Objects ignored: ")
@@ -462,6 +474,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                 for col, obj in collectionstojoin.items():
                     print(f"{col} ->{obj}")
 
+            # Exporting
             filepath = dir_path + "/" + object_name + ".vb"
             if filename is not None:
                 path=dir_path
@@ -487,7 +500,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                                         my_tool.no_ramps, my_tool.delete_intermediate,
                                         my_tool.credit, outline_properties)
         except Exception as e:
-            self.report({'ERROR'}, f"Error exporting frame: {e}")
+            raise Exception(f"Error exporting. Error: {e}") from e
         finally:
             bpy.ops.ed.undo_push(message="Join Meshes: frame export")
             bpy.ops.ed.undo()
@@ -500,9 +513,8 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
             print(f"Moving files to {dest}")
             shutil.copytree(src, dest, dirs_exist_ok=True)
             shutil.rmtree(src)
-        except Exception as e:
-            self.report({'ERROR'}, f"Error moving file {src_file} to {dest_file}. Error: {e}")
-            return {'CANCELLED'}
+        except shutil.Error as e:
+            raise shutil.Error(f"Error moving file {src_file} to {dest_file}. Error: {e}") from e
 
     def appendto(self, collection, destination):
         '''Append all meshes in a collection to a list'''
@@ -532,17 +544,20 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
                     ob.shape_key_remove(shape_key)
 
         # apply modifiers
+        count_mod_applied = 0
+        count_mod_removed = 0
         for obj in objs:
-            print(f"Applying modifiers for {obj.name}")
             for modifier in obj.modifiers:
-                print(f"Modifier: {modifier.name}")
                 if not modifier.show_viewport:
                     obj.modifiers.remove(modifier)
+                    count_mod_removed += 1
                 else:
                     bpy.ops.object.select_all(action='DESELECT')
                     obj.select_set(True)
                     context.view_layer.objects.active = obj
                     bpy.ops.object.modifier_apply(modifier=modifier.name)
+                    count_mod_applied += 1
+        print(f"Applied {count_mod_applied} modifiers and removed {count_mod_removed} modifiers")
 
         # join stuff
         bpy.ops.object.select_all(action='DESELECT')
@@ -553,12 +568,11 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         target_obj.data = bpy.context.object.data
 
         # Remove all vertex groups with the word MASK on them
-        vgs = [vg for vg in target_obj.vertex_groups if vg.name.find("MASK") != -1]
+        vgs = [vg for vg in target_obj.vertex_groups if "MASK" in vg.name]
         if len(vgs) > 0:
-            print("Removing vertex groups with MASK in their name:")
             for vg in vgs:
-                print(vg.name)
-                target_obj.vertex_groups.remove(vg.pop())
+                target_obj.vertex_groups.remove(vg)
+            print(f"Removed {len(vgs)} vertex groups with the word 'MASK' in them")
 
     def is_collection_empty(self, collection):
         '''Check if a collection is empty'''
