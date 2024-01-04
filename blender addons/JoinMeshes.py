@@ -25,7 +25,7 @@ bl_info = {
     "description": "Facilitates the workflow when dealing with mods made in XXMI.",
     "category": "Interface",
     "tracker_url": "https://github.com/leotorrez/LeoTools",
-    "version": (3, 0, 0),
+    "version": (3, 0, 1),
 }
 class MainPanel:
     '''Main Panel'''
@@ -262,9 +262,9 @@ class WMFileSelector(bpy.types.Operator, ExportHelper):
     only_selected : bpy.props.BoolProperty(name="Only export selected", default=False,
         description="Uses only the selected objects when deciding which meshes to export",
         )
-    no_ramps : bpy.props.BoolProperty(name="Ignore shadow ramps/metal maps/diffuse guide", default=False,
+    no_ramps : bpy.props.BoolProperty(name="Ignore shadow ramps/metal maps/diffuse guide", default=True,
         description="Skips exporting shadow ramps, metal maps and diffuse guides",)
-    delete_intermediate : bpy.props.BoolProperty(name="Delete intermediate files", default=False,
+    delete_intermediate : bpy.props.BoolProperty(name="Delete intermediate files", default=True,
         description="Deletes the intermediate vb/ib files after a successful export to reduce clutter",)
     credit : bpy.props.StringProperty(name="Credit",default='',
         description='''Name that pops up on screen when mod is loaded.
