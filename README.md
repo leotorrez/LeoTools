@@ -29,6 +29,9 @@ These can be applied to any 3DM install.
 
 - **DailyLumine.py:** Despite its name is not only for lumine. It's a script meant to deactivate all the folders within a specific directory(assuming you have your mods organized by character folder) and randomly reactivate only one of them, hence swapping active mod on launch. It is better to use this script in the launch =  clause of your 3DM and then have the script launch the game for you. You might need to set Python as the default exe for .py files.
 
+- **.ModManager v2.ahk** is an AutoHotKey v2 script that speeds up the process of adding and removing the word DISABLED from the start of folders to speed up mod handling. If you don't have experience with AutoHotKey is better to avoid it.
+ALT + D to toggle folder
+
 ## Blender addons and scripts
 
 - **JoinMeshes.py:** Blender plugin that eases the repetitive tasks of mod exporting. Includes auto modifier application, shapekeys and even exporting every frame of animation as a unique mod folder. Useful for advanced modding and faster workflows. [For a guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md)
