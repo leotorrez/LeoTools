@@ -1,9 +1,8 @@
-# 4.3 NEWS
-- Offset.ini has been patched and 2 shaderfixes added. Please update your files accordingly.
-- ORFix.ini seems to be fine.
-- Yelan Dash has a little error, might wait on that one a bit to prioritize other fixes.
-- Most mods broke for the game, general fix at: https://gamebanana.com/tools/15654
+# 4.4 NEWS
 
+- The new optimization feature (a lazy filter) breaks all mods while active. Go to the bottom of your graphics config in game to turn it off and keep enjoying mods.
+- Some mods broke, general fix [HERE!](https://github.com/leotorrez/LeoTools/blob/main/Fix4.4.py).
+- ORFix needed a minor update to work with 4.4. It's already updated in the repo. Please updated and it will fix your mods.
 
 # LeoTools
 Modding tools for GIMI, SRMI and HIMI (Most likely applicable to 3dmigoto modding in general yet not directly supported)
