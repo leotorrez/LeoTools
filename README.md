@@ -1,3 +1,4 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F7ULKBY)
 # 4.4 NEWS
 
 - The new optimization feature (a lazy filter) breaks all mods while active. Go to the bottom of your graphics config in game to turn it off and keep enjoying mods.
