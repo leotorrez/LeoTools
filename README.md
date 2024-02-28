@@ -27,6 +27,8 @@ Specific tools for mod makers to use on their mods. Users may also take advantag
 ## 3DMigoto tools
 These can be applied to any 3DM install.
 
+- **Outfit Compiler:** A script that compiles all the mods in a folder into a single mod. This allows you to export your toggles as single mods and lately compile them into a single mod alongside your base body. [For a quick guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/OutfitCompiler.md)
+
 - **DailyLumine.py:** Despite its name is not only for lumine. It's a script meant to deactivate all the folders within a specific directory(assuming you have your mods organized by character folder) and randomly reactivate only one of them, hence swapping active mod on launch. It is better to use this script in the launch =  clause of your 3DM and then have the script launch the game for you. You might need to set Python as the default exe for .py files.
 
 - **.ModManager v2.ahk** is an AutoHotKey v2 script that speeds up the process of adding and removing the word DISABLED from the start of folders to speed up mod handling. If you don't have experience with AutoHotKey is better to avoid it.
