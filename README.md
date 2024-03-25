@@ -38,4 +38,4 @@ ALT + D to toggle folder
 
 - **JoinMeshes.py:** Blender plugin that eases the repetitive tasks of mod exporting. Includes auto modifier application, shapekeys and even exporting every frame of animation as a unique mod folder. Useful for advanced modding and faster workflows. [For a guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md)
 
-- **quickBlenderImport.py(Currently broken in 4.0):** Eases the process of importing models from dumps, applies materials to each corresponding meshes and does some clean-up tasks on the mesh leaving it in nice quads. 
+- **quickBlenderImport.py:** Eases the process of importing models from dumps, applies materials to each corresponding meshes and does some clean-up tasks on the mesh leaving it in nice quads. 
