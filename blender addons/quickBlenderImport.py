@@ -1,6 +1,12 @@
 import os
 import bpy
-from blender_3dmigoto_gimi import Import3DMigotoFrameAnalysis
+try:
+    from blender_3dmigoto_gimi import Import3DMigotoFrameAnalysis
+    print("Using the 3DMigoto GIMI importer")
+except ImportError:
+    from blender_3dmigoto_srmi import Import3DMigotoFrameAnalysis
+    print("Using the 3DMigoto SRMI importer")
+
 from blender_dds_addon import import_dds
 from bpy.utils import register_class, unregister_class
 
