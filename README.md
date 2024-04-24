@@ -1,9 +1,7 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F7ULKBY)
-# 4.4 NEWS
+# 4.6 NEWS
 
-- The new optimization feature (a lazy filter) breaks all mods while active. Go to the bottom of your graphics config in game to turn it off and keep enjoying mods.
-- Some mods broke, general fix [HERE!](https://github.com/leotorrez/LeoTools/blob/main/Fix4.4.py).
-- ORFix needed a minor update to work with 4.4. It's already updated in the repo. Please updated and it will fix your mods.
+- Shader hashes changed for offset.ini so update it to the 3.5 version to fix- Check it in releases.
 
 # LeoTools
 Modding tools for GIMI, SRMI and HIMI (Most likely applicable to 3dmigoto modding in general yet not directly supported)
