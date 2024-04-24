@@ -2,6 +2,7 @@
 # 4.6 NEWS
 
 - Shader hashes changed for offset.ini so update it to the 3.5 version to fix- Check it in releases.
+- ORFix needs updating a single hash. Get the latest orfix.ini to solve the issue
 
 # LeoTools
 Modding tools for GIMI, SRMI and HIMI (Most likely applicable to 3dmigoto modding in general yet not directly supported)
