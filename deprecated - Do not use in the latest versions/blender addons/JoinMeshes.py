@@ -505,16 +505,20 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
             bpy.ops.ed.undo_push(message="Join Meshes: frame export")
             bpy.ops.ed.undo()
 
-    def move_folder_to(self, src, dest):
+    def move_folder_to(self, src, dest, skip_textures=False):
         '''Move a folder to another location'''
-        src_file = ""
-        dest_file = ""
         try:
+            if skip_textures:
+                print("Removing textures prior to moving")
+                for root, dirs, files in os.walk(src):
+                    for name in files:
+                        if name.endswith((".png", ".dds", ".jpg")):
+                            os.remove(os.path.join(root, name))
             print(f"Moving files to {dest}")
             shutil.copytree(src, dest, dirs_exist_ok=True)
             shutil.rmtree(src)
         except shutil.Error as e:
-            raise shutil.Error(f"Error moving file {src_file} to {dest_file}. Error: {e}") from e
+            raise shutil.Error(f"Error moving {src} to {dest}. Error: {e}") from e
 
     def appendto(self, collection, destination):
         '''Append all meshes in a collection to a list'''
@@ -568,7 +572,7 @@ class ExecuteAuxClassOperator(bpy.types.Operator):
         target_obj.data = bpy.context.object.data
 
         # Remove all vertex groups with the word MASK on them
-        vgs = [vg for vg in target_obj.vertex_groups if "MASK" in vg.name]
+        vgs = [vg for vg in target_obj.vertex_groups if "mask" in vg.name.lower()]
         if len(vgs) > 0:
             for vg in vgs:
                 target_obj.vertex_groups.remove(vg)

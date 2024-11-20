@@ -175,6 +175,7 @@ ${variables[i]} = 0,1
             primerapart = False
             loops.append(loop)
         ini_data = ini_data.replace(search_draws.pop(0), drawcount)
+    # TODO: 3.0 charas with not normals on all parts will move the texture slot later down the ini
     search = re.findall(r'ps-t2 = \w+', ini_data, re.DOTALL)
     if len(search) != len(loops):
         search = re.findall(r'ps-t1 = \w+', ini_data, re.DOTALL)

@@ -3,3 +3,4 @@ blender_dds_addon/
 test.py
 4.1fix.py
 .vscode/
+releases/*.zip
