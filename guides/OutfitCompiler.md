@@ -1,3 +1,6 @@
+# Deprecated    
+The functionality of this tool now comes built in XXMITools. Do not use this tool any further
+
 # Use case and applications
 This tool is intended to reduce the filesize of merged mods by not exporting the same parts of your model every time you wanna add an accesory or hairstyle. It also makes it easier for your toggle to be merged with other merged mods made with this same tool. To avoid confusion we will call merged the ones made with the classic tool and compiled the ones made with this one.
 

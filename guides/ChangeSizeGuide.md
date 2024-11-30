@@ -22,7 +22,7 @@ This is a guide for the tool that allows you to offset characters position and c
 ## Requirements
 
 - A fully working character or weapon mod
-- [Offset-Scale Changer](https://github.com/leotorrez/LeoTools/releases/tag/offsetchanger)  
+- [Offset.ini](https://github.com/leotorrez/LeoTools/blob/main/releases/Offset.ini)  
 - [Multiply weight Python script](https://github.com/leotorrez/LeoTools/blob/main/multiplyweight.py)
 
 Before we start, make a backup or two!

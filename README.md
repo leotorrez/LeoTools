@@ -1,8 +1,4 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F7ULKBY)
-# 4.6 NEWS
-
-- Shader hashes changed for offset.ini so update it to the 3.5 version to fix- Check it in releases.
-- ORFix needs updating a single hash. Get the latest orfix.ini to solve the issue
 
 # LeoTools
 Modding tools for GIMI, SRMI and HIMI (Most likely applicable to 3dmigoto modding in general yet not directly supported)
@@ -26,7 +22,7 @@ Specific tools for mod makers to use on their mods. Users may also take advantag
 ## 3DMigoto tools
 These can be applied to any 3DM install.
 
-- **Outfit Compiler:** A script that compiles all the mods in a folder into a single mod. This allows you to export your toggles as single mods and lately compile them into a single mod alongside your base body. [For a quick guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/OutfitCompiler.md)
+- **Outfit Compiler(DEPRECATED FOR GIMI, SRMI, ZZMI and HIMI):** A script that compiles all the mods in a folder into a single mod. This allows you to export your toggles as single mods and lately compile them into a single mod alongside your base body. [For a quick guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/OutfitCompiler.md)
 
 - **DailyLumine.py:** Despite its name is not only for lumine. It's a script meant to deactivate all the folders within a specific directory(assuming you have your mods organized by character folder) and randomly reactivate only one of them, hence swapping active mod on launch. It is better to use this script in the launch =  clause of your 3DM and then have the script launch the game for you. You might need to set Python as the default exe for .py files.
 
@@ -35,6 +31,6 @@ ALT + D to toggle folder
 
 ## Blender addons and scripts
 
-- **JoinMeshes.py:** Blender plugin that eases the repetitive tasks of mod exporting. Includes auto modifier application, shapekeys and even exporting every frame of animation as a unique mod folder. Useful for advanced modding and faster workflows. [For a guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md)
+- **JoinMeshes.py(DEPRECATED):** Blender plugin that eases the repetitive tasks of mod exporting. Includes auto modifier application, shapekeys and even exporting every frame of animation as a unique mod folder. Useful for advanced modding and faster workflows. [For a guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md)
 
 - **quickBlenderImport.py:** Eases the process of importing models from dumps, applies materials to each corresponding meshes and does some clean-up tasks on the mesh leaving it in nice quads. 

@@ -1,3 +1,7 @@
+# DEPRECATED
+The functionality of this tool now comes built in XXMITools. Do not use this tool any further
+
+
 # Under construction
 This guide is still under construction. It will be updated as soon as possible. Feel free to read it to get a basic understanding of the innerowrkings of the tool, but keep in mind that some things might change in the future.
 
@@ -50,4 +54,3 @@ Variant mods are toggles that consist of a base mod with small variations of the
 The new section of the toolkit will run scripts in your dump folder in whichever order you have them setup(using said dump folder as its working directory). You can include arguments alongside with your script to customize their functionality some more. This will run on parallel to blender so your UI won't be locked during the export process. Feel free to keep working on your project while the scripts run in the background.
 
 example image4
-
