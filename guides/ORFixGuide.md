@@ -1,17 +1,20 @@
-To use this reflection/outline color shader fix: 
+# How to use this Reflection/Outline FIX
 
-1) Place [this ini](https://github.com/leotorrez/LeoTools/blob/main/releases/ORFix.ini) into the folder `3Dmigoto/Mods/BufferValues `
+> **Notes:** Since pyro traveler release, you can use ORFix in traveler to fix their broken tattoo & nightsoul effect. Aditionally to mod said tattoo texture, do so by hash. Using ORFix in Natlan characters also fixes their Nightsoul effect being broken.
+
+1) Place [this ini](https://github.com/leotorrez/LeoTools/blob/main/releases/ORFix.ini) into the folder `3Dmigoto/Mods/BufferValues`
 
 2) At the bottom of each modded [TextureOverride {Character} {ObjectPart}], type the following command:
 
 ```ini
 run = CommandList\global\ORFix\ORFix
 ```
-Example:
+
+## Simple Example
 
 ```ini
 [TextureOverrideLaylaHead]
-hash = b617aa07
+hash = xxxxxxxx
 match_first_index = 0
 ib = ResourceLaylaHeadIB
 ps-t0 = ResourceLaylaHeadDiffuse
@@ -23,16 +26,18 @@ Some characters might only need this fix on some of their parts but not all. Sim
 
 A good example of it is Lynette. She needs the fix in Body and Extra but not Head and Dress.
 
+## Mixed case
+
 ```ini
 [TextureOverrideLynetteHead]
-hash = 010cf88a
+hash = xxxxxxxx
 match_first_index = 0
 ib = ResourceLynetteHeadIB
 ps-t0 = ResourceLynetteHeadDiffuse
 ps-t1 = ResourceLynetteHeadLightMap
 
 [TextureOverrideLynetteBody]
-hash = 010cf88a
+hash = xxxxxxxx
 match_first_index = 16257
 ib = ResourceLynetteBodyIB
 ps-t0 = ResourceLynetteBodyNormalMap
@@ -41,14 +46,14 @@ ps-t2 = ResourceLynetteBodyLightMap
 run = CommandList\global\ORFix\ORFix
 
 [TextureOverrideLynetteDress]
-hash = 010cf88a
+hash = xxxxxxxx
 match_first_index = 65223
 ib = ResourceLynetteDressIB
 ps-t0 = ResourceLynetteDressDiffuse
 ps-t1 = ResourceLynetteDressLightMap
 
 [TextureOverrideLynetteExtra]
-hash = 010cf88a
+hash = xxxxxxxx
 match_first_index = 68358
 ib = ResourceLynetteExtraIB
 ps-t0 = ResourceLynetteExtraNormalMap
@@ -57,11 +62,11 @@ ps-t2 = ResourceLynetteExtraLightMap
 run = CommandList\global\ORFix\ORFix
 ```
 
-When including this ini in your Mods. Make sure the user saves [ORFix.ini](https://github.com/leotorrez/LeoTools/blob/main/releases/ORFix.ini) in the right folder.
+## How to post your mod
+
+When including this ini in your Mods. Make sure the user saves [ORFix.ini](https://github.com/leotorrez/LeoTools/blob/main/releases/ORFix.ini) in the right folder. (in the case of XXMI it comes already installed, configured and gets auto updated)
 
 Instead of including it in your mod folder, is recomended to include the download link to this ini in your mod description. That way, the user always gets the latest version and doesn't come asking you for an updated fix <3
-
-Example:
 
 [Lynettenewcoolmod.zip](fakelink.com)
 
