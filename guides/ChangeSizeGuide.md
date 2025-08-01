@@ -5,15 +5,15 @@ This is a guide for the tool that allows you to offset characters position and c
 - [Requirements](#requirements)
 - [Restrictions](#restrictions)
 - [Blender setup](#blender-setup)
-    - [Preparations](#preparations)
-    - [Export](#export)
+  - [Preparations](#preparations)
+  - [Export](#export)
 - [Scripts](#scripts)
-    - [Resize](#resize)
-    - [Offset](#offset)
+  - [Resize](#resize)
+  - [Offset](#offset)
 - [Modifying face](#modifying-face)
-    - [Hiding face](#hiding-face)
-    - [Replacing face](#replace-face)
-    - [Resizing face](#resizing-face)
+  - [Hiding face](#hiding-face)
+  - [Replacing face](#replace-face)
+  - [Resizing face](#resizing-face)
 - [Quick summary](#quick-summary)
 - [Tips](#tips)
 - [Known Issues](#known-issues)
@@ -22,7 +22,7 @@ This is a guide for the tool that allows you to offset characters position and c
 ## Requirements
 
 - A fully working character or weapon mod
-- [Offset.ini](https://github.com/leotorrez/LeoTools/blob/main/releases/Offset.ini)  
+- [Offset.ini](https://github.com/leotorrez/LeoTools/blob/main/releases/Offset.ini)
 - [Multiply weight Python script](https://github.com/leotorrez/LeoTools/blob/main/multiplyweight.py)
 
 Before we start, make a backup or two!
@@ -32,7 +32,7 @@ I also recommend that you read the [restrictions](#restrictions) section first.
 
 ## Restrictions
 
-- ***VERY IMPORTANT:*** If you want to age a character up or down, you need to change their proportions (head-to-body size ratio), unless you want to create a giant kid or a tiny adult. You will quickly notice that the face doesn't line up with the head. Adjusting it would require you to use different scaling values for the body and the face (e.g., 1.44 for the body and 0.9 for the face). You can offset both the face and the body if you don't resize them, but the math stops working properly if you do. Most of the time, you simply cannot use the same offset values for the face. Moreover, different scaling values result in a difference between the relative positions of the face and body pivot points compared to their default positions. Therefore, you might need to model a fake face for your character and place it in their body mesh. The downside is that they are going to lose their facial animations.
+- **_VERY IMPORTANT:_** If you want to age a character up or down, you need to change their proportions (head-to-body size ratio), unless you want to create a giant kid or a tiny adult. You will quickly notice that the face doesn't line up with the head. Adjusting it would require you to use different scaling values for the body and the face (e.g., 1.44 for the body and 0.9 for the face). You can offset both the face and the body if you don't resize them, but the math stops working properly if you do. Most of the time, you simply cannot use the same offset values for the face. Moreover, different scaling values result in a difference between the relative positions of the face and body pivot points compared to their default positions. Therefore, you might need to model a fake face for your character and place it in their body mesh. The downside is that they are going to lose their facial animations.
 - Resized characters use their original animations which vary for different body types/heights. For example, adult Nahida is still gonna run like a kid.
 - The game camera is going to remain where it was originally. For example, if you size a character up, their head is gonna be above the focal point of the camera. Alternatively, if you scale a character down, they are gonna be below the focal point of the camera. The same restriction applies to cutscenes.
 - Even though your character looks bigger/smaller, their skeleton and hitboxes remains the same. So your character's attacks are not going to reach further than they do originally. The same applies to climbing, swimming, etc. In other words, it does not alter gameplay in any way; it is purely a cosmetic change.
@@ -50,17 +50,17 @@ This is an example of adult Nahida body next to her default body.
 
 ![Side-to-side comparison](images/sts_comparison.png)  
 This is needed for proper weights transfer (if you haven't done this up to this point), and for proper deformations as well.
-You can use a character armature to check deformations in blender.  
+You can use a character armature to check deformations in blender.
 
 Here is an example of misalignement of the sized down hair and the character's armature.
-![Distance to bones](images/distance_to_bones.png)  
+![Distance to bones](images/distance_to_bones.png)
 
 In this case the misalignement is not big enough to cause a severe distortion in animations, in other words, it works for this model, but your mileage may vary.
 
 The eyes, on the other hand, are very sensitive to even the slightest difference to their position.
 
 ![Eyes difference](images/eyes_diff.png)  
-The bigger eyes are the default ones, and the smaller eyes are the modded ones.  
+The bigger eyes are the default ones, and the smaller eyes are the modded ones.
 
 Something like shown on this picture is way too much difference in the eyes position, they are gonna move weird.  
 **It is better to assign them to the head vertex group.**
@@ -72,17 +72,18 @@ When you are done with all this, you can export your model.
 Export your model just like any other mod. No additional steps or instructions here. Scaling and offset are dealt with outside of blender.
 
 ## Scripts
+
 ### Resize
 
 1. Copy multiplyweight.py script in the desired character mod folder.
 2. Run it.
 3. Enter the value you want to multiply the character's size by.
-    - 1 is the original size.
-    - Values bigger than 1 will upscale the character (e.g. 1.2)
-    - Values lesser than 1 will downscale the character (e.g. 0.8)
-    - The script uses the current character size as a reference point. If you upscaled the character twice (you used value 2 the previous time you ran the script) and want to revert the change, you are gonna have to run the script again and use 0.5 as a resize value. This will size character back down to their original size (2 * 0.5 = 1).  
-    Alternatively, you can restore your CharacterBlend.buf backup.
-    
+   - 1 is the original size.
+   - Values bigger than 1 will upscale the character (e.g. 1.2)
+   - Values lesser than 1 will downscale the character (e.g. 0.8)
+   - The script uses the current character size as a reference point. If you upscaled the character twice (you used value 2 the previous time you ran the script) and want to revert the change, you are gonna have to run the script again and use 0.5 as a resize value. This will size character back down to their original size (2 \* 0.5 = 1).  
+     Alternatively, you can restore your CharacterBlend.buf backup.
+
 You can run the game now - you will see that your character has different size.
 But you will quickly notice one issue.  
 If you upscaled the character, their feet or entire legs are gonna be in the ground.
@@ -96,13 +97,16 @@ To fix this issue, we need to offset the character.
 2. Unpack it and copy ShaderFixes and Mods folders into your main 3dmigoto folder.
 3. Open your mod INI file
 4. Add **offset** variable to the [Constants] section:
-``` INI
+
+```INI
 [Constants]
 global $offset = *offset_value*
 ...
 ```
+
 5. Calculate the offset when the character is on screen by adding `$\global\offset\offset = $offset` line in your [TextureOverrideCharacterPosition] section:
-``` INI
+
+```INI
 ...
 [TextureOverrideCharacterPosition]
 ;initiall overrides
@@ -110,9 +114,11 @@ global $offset = *offset_value*
 $\global\offset\offset = $offset
 ...
 ```
+
 6. Apply the offset to every character part they have (head, body, dress, extra).  
-To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
-``` INI
+   To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
+
+```INI
 ...
 [TextureOverrideCharacterPart]
 ;initial overrides
@@ -132,7 +138,8 @@ It is very important that **all the modifications to the face parts are done by 
 To hide the original face, you need to prevent all the face parts from rendering. You can do that by placing the line `handling = skip` in their overrides.
 
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
-``` INI
+
+```INI
 [Constants]
 global $active = 0
 
@@ -140,7 +147,7 @@ global $active = 0
 post $active = 0
 
 [TextureOverridePosition]
-hash = 
+hash =
 $active = 1
 
 [TextureOverrideFace1]
@@ -150,17 +157,19 @@ if $active == 1
 endif
 ...
 ```
-The outlines of the face might end up floating midair if you have other shaders that interact with it. Like the outline and reflection fix for 3.0+ characters. In the case of this one you can fix it by adding an extra line to each of the 3 face IBs.  
-``` INI
+
+The outlines of the face might end up floating midair if you have other shaders that interact with it. Like the outline and reflection fix for 3.0+ characters. In the case of this one you can fix it by adding an extra line to each of the 3 face IBs.
+
+```INI
 [TextureOverrideFace1]
 hash = *Face Part IB Hash*
 if $active == 1
-    $\global\ORFix\active = 0
     handling = skip
 endif
 ```
 
 ### Replacing face
+
 We won't elaborate much on this section on the exact steps because there's several methods that could work even better than the one I use.
 
 However if you intend to hide the face and add your own into the body mesh, theres a few things to keep in mind. First of all you will lose in game facial animations. You can account for it with a universal rest pose or some animated mod that deals with it.
@@ -168,17 +177,20 @@ However if you intend to hide the face and add your own into the body mesh, ther
 The body shading is too complex for the style the face has, hence you need to get simplified normals on the face. Google the term for more info.
 
 Lastly, the eyes in genshin are actually hollow because of how their shaders are set up- HOWEVER we don't have the proper shading in body mesh. So you will have to think a way around it. I personally haven't found any good method so good luck on this and contact me if you find a decent method.
+
 ### Resizing face
 
 You don't need to resize the face if you hide it. But in case you don't - resizing is an option, although not recommended.
 
 To resize the face, you need:
+
 - `$faceScale` value in your [Constants] section
 - `$global\offset\faceScale = $faceScale` line in your [Position] section
-- `run = CommandList\global\offset\OffsetFace` line in each part of the face.  
+- `run = CommandList\global\offset\OffsetFace` line in each part of the face.
 
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
-``` INI
+
+```INI
 [Constants]
 global $active = 0
 $faceScale = *face_scale_value* ;the number you want to scale the face by
@@ -205,11 +217,13 @@ endif
 You don't need to offset the face if you hide it. But in case you don't - it is possible. Works perfectly if nothing was resized.
 
 To offset the face, you need:
+
 - `$faceOffset` variable in your [Constants] section (or you can use the `$offset` variable you already have for the body)
-- `run = CommandList\global\offset\OffsetFace` line in each part of the face.  
+- `run = CommandList\global\offset\OffsetFace` line in each part of the face.
 
 It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
-``` INI
+
+```INI
 [Constants]
 global $active = 0
 global $offset = *face_offset_value*
@@ -218,7 +232,7 @@ global $offset = *face_offset_value*
 post $active = 0
 
 [TextureOverrideCharacterPosition]
-; hash = 
+; hash =
 ;.......
 $active = 1
 $\global\offset\faceOffset = $offset
@@ -230,13 +244,14 @@ if $active == 1
 endif
 ...
 ```
+
 ### Offsetting Weapon
 
 When offsetting weapons you are less restricted. You may use the same script to multiply a weapon's size by a value. As well as offsetting them even if the weapon is not modded.
 
 Is a good practice to limit offset weapons to a certain character.
 
-``` INI
+```INI
 [Constants]
 global $active = 0
 global $offset = *weapon_offset_value*
@@ -257,13 +272,12 @@ drawindexed = auto
 
 [TextureOverrideWeaponHead] ;repeat for other parts if the weapon has them, such as Head, Body, Dress or Extra
 hash = xxxxxx ; example hash
-match_first_index = 0 
+match_first_index = 0
 if $active == 1
     run = CommandList\global\offset\offset
 endif
 ...
 ```
-
 
 ## Quick Summary
 
@@ -277,27 +291,27 @@ endif
 
 - A good advice would be to download and import a character's skeleton/armature into blender for reference.
 - Try to keep the position of body parts of your model as close as possible to the character's default body parts. A skeleton/armature might help you to check the deformations.
-For example, if you decide to age character up, you will have to make their head smaller. And that implies making their hair smaller as well. Make sure not to overdo it, because the smaller the hair is, the more distance there is between the hair vertecies and the armature, and that means more distortion during animations.
+  For example, if you decide to age character up, you will have to make their head smaller. And that implies making their hair smaller as well. Make sure not to overdo it, because the smaller the hair is, the more distance there is between the hair vertecies and the armature, and that means more distortion during animations.
 - You can remove offset when the character is swimming so that they don't do it above or below the water. See [tracking](https://github.com/whocares8128/GI-Status-Tracker).
 - If you use a fake face for the character, it is recommended that you use one of many normals manipulation tricks to force the game to draw anime-ish shadow on the face.
 
 ## Known issues
 
-- F6 is not gonna work anymore. All the modded characters are gonna look like spiky abominations in the F6 'mods off' mode, no matter if their size was changed or not.  
-    
-    **Solution**: Holding f9 then tapping numpad 0 seems to be a suitable replacement that is not affected by any mod. You may release f9 after.
+- F6 is not gonna work anymore. All the modded characters are gonna look like spiky abominations in the F6 'mods off' mode, no matter if their size was changed or not.
 
-- We have to modify the face one way or another, either hide it or resize and offset it. The problem is that genshin charactres share their face parts between different characters. So when there are other characters on screen with a character that uses this tool, they can randomly have their face parts hidden/resized/offset. You are usually gonna see this in party screen, in the teapot and in coop. 
+  **Solution**: Holding f9 then tapping numpad 0 seems to be a suitable replacement that is not affected by any mod. You may release f9 after.
 
-    **Solution**: There is no solution for this.
+- We have to modify the face one way or another, either hide it or resize and offset it. The problem is that genshin charactres share their face parts between different characters. So when there are other characters on screen with a character that uses this tool, they can randomly have their face parts hidden/resized/offset. You are usually gonna see this in party screen, in the teapot and in coop.
 
-- You are supposed to use IB hash for manipulations on the face parts, otherwise your game is gonna behave weird - it can freeze, UI elements can pop in and out of existence, you can see weird flashy artifacs here and there, etc. 
+  **Solution**: There is no solution for this.
 
-    **Solution**: don't use VB hashes for the face parts. Use their IB hashes instead.
+- You are supposed to use IB hash for manipulations on the face parts, otherwise your game is gonna behave weird - it can freeze, UI elements can pop in and out of existence, you can see weird flashy artifacs here and there, etc.
+
+  **Solution**: don't use VB hashes for the face parts. Use their IB hashes instead.
 
 - Characters and weapons look "fuzzy".
 
-    **Solution:** Turning off motion blur and using high render resolution can reduce the issue enough to make it unnoticeable. However the issue has not been properly fixed yet. It needs more research, contact me in any social if you wanna help out.
+  **Solution:** Turning off motion blur and using high render resolution can reduce the issue enough to make it unnoticeable. However the issue has not been properly fixed yet. It needs more research, contact me in any social if you wanna help out.
 
 ## INI samples
 
@@ -307,7 +321,7 @@ An example of face offset in Leo's Shenhe mod.
 
 You can place all the offset calculations in their own CommandList and call it from the [CharacterPosition] override section.
 
-``` INI
+```INI
 [Constants]
 global $active = 0
 global $offset = -0.45
@@ -334,13 +348,13 @@ endif
 
 [TextureOverrideShenheFaceIB2]
 hash = dc710a44
-match_priority = 1 
+match_priority = 1
 if $active == 1
     run = CommandList\global\offset\OffsetFace
 endif
 [TextureOverrideShenheFaceIB3]
 hash = f931161a
-match_priority = 1 
+match_priority = 1
 if $active == 1
     run = CommandList\global\offset\OffsetFace
 endif
@@ -349,7 +363,7 @@ endif
 hash = 541cf273
 vb1 = ResourceShenheBlend
 handling = skip
-draw = 28844,0 
+draw = 28844,0
 
 [TextureOverrideShenheTexcoord]
 hash = 86c4f5ec
@@ -396,7 +410,7 @@ You can place all the face modifications in their own ini file if you want. Reme
 
 This is a separate INI file to hide Nahida's face in Leo's 'Rukkhadevata over Nahida' mod.
 
-``` INI
+```INI
 [Constants]
 global $active = 0
 
@@ -408,29 +422,27 @@ hash = 37ef15ec
 $active = 1
 match_priority = 1 ;Needed to eliminate the conflict with the main ini file because of the same hash override in there
 
-[TextureOverrideFace1] 
+[TextureOverrideFace1]
 hash = 46343c52
-match_priority = 1 
+match_priority = 1
 if $active == 1
     handling = skip
 endif
 
 [TextureOverrideFace2]
 hash = 17b3e07a
-match_priority = 1 
+match_priority = 1
 if $active == 1
     handling = skip
 endif
 
 [TextureOverrideFace3]
 hash = 7fc58760
-match_priority = 1 
+match_priority = 1
 if $active == 1
     handling = skip
 endif
 ```
-
-You can remove `$\global\ORFix\active = 0` if it causes issues.
 
 ### Offsetting Festering Desire for Furina
 
@@ -470,5 +482,6 @@ run = CommandList\global\offset\offset
 ...
 ```
 
-The value for offset can be set in another mod- such as a `merge.ini` and then be accessed via namespace from their weapon mod. This is more dynamic and advanced but way more powerful for when you want to use the same offset value for multiple mods and have it change on certain conditions. 
-Read more about `namespaces` at: https://github.com/leotorrez/GI-Model-Importer/wiki
+The value for offset can be set in another mod- such as a `merge.ini` and then be accessed via namespace from their weapon mod. This is more dynamic and advanced but way more powerful for when you want to use the same offset value for multiple mods and have it change on certain conditions.
+Read more about `namespaces` at: <https://github.com/leotorrez/GI-Model-Importer/wiki>
+
