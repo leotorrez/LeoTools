@@ -104,18 +104,7 @@ global $offset = *offset_value*
 ...
 ```
 
-5. Calculate the offset when the character is on screen by adding `$\global\offset\offset = $offset` line in your [TextureOverrideCharacterPosition] section:
-
-```INI
-...
-[TextureOverrideCharacterPosition]
-;initiall overrides
-
-$\global\offset\offset = $offset
-...
-```
-
-6. Apply the offset to every character part they have (head, body, dress, extra).  
+5. Calculate the offset when the character is on screen by adding `$\global\offset\offset = $offset`, then apply the offset to every character part they have (head, body, dress, extra).  
    To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
 
 ```INI
@@ -123,6 +112,7 @@ $\global\offset\offset = $offset
 [TextureOverrideCharacterPart]
 ;initial overrides
 
+$\global\offset\offset = $offset
 run = CommandList\global\offset\Offset
 ...
 ```
@@ -259,12 +249,6 @@ global $offset = *weapon_offset_value*
 [Present]
 post $active = 0
 
-[TextureOverrideCharacterPosition]
-; hash =
-; ....
-$active = 1
-$\global\offset\offset = $offset
-
 [TextureOverrideWeaponIB]
 hash = xxxxxx ; example hash
 handling = skip
@@ -274,6 +258,7 @@ drawindexed = auto
 hash = xxxxxx ; example hash
 match_first_index = 0
 if $active == 1
+    $\global\offset\offset = $offset
     run = CommandList\global\offset\offset
 endif
 ...
@@ -329,34 +314,33 @@ global $offset = -0.45
 [Present]
 post $active = 0
 
-[CommandListOffset]
-$\global\offset\offset = $offset
-$\global\offset\faceOffset = $offset
 
 [TextureOverrideShenhePosition]
 hash = e44b58b5
 vb0 = ResourceShenhePosition
 $active = 1
-run = CommandListOffset
 
 [TextureOverrideShenheFaceIB1]
 hash = 7b61f273
 match_priority = 1 ; removes face modding conflict warnings
 if $active == 1
-    run = CommandList\global\offset\OffsetFace
+    $\global\offset\offset = $offset
+    run = CommandList\global\offset\Offset
 endif
 
 [TextureOverrideShenheFaceIB2]
 hash = dc710a44
 match_priority = 1
 if $active == 1
-    run = CommandList\global\offset\OffsetFace
+    $\global\offset\offset = $offset
+    run = CommandList\global\offset\Offset
 endif
 [TextureOverrideShenheFaceIB3]
 hash = f931161a
 match_priority = 1
 if $active == 1
-    run = CommandList\global\offset\OffsetFace
+    $\global\offset\offset = $offset
+    run = CommandList\global\offset\Offset
 endif
 
 [TextureOverrideShenheBlend]
@@ -383,6 +367,7 @@ match_first_index = 0
 ib = ResourceShenheHeadIB
 ps-t0 = ResourceShenheHeadDiffuse
 ps-t1 = ResourceShenheHeadLightMap
+$\global\offset\offset = $offset
 run = CommandList\global\offset\Offset
 
 [TextureOverrideShenheBody]
@@ -391,6 +376,7 @@ match_first_index = 14385
 ib = ResourceShenheBodyIB
 ps-t0 = ResourceShenheBodyDiffuse
 ps-t1 = ResourceShenheBodyLightMap
+$\global\offset\offset = $offset
 run = CommandList\global\offset\Offset
 
 [TextureOverrideShenheDress]
@@ -399,6 +385,7 @@ match_first_index = 48753
 ib = ResourceShenheDressIB
 ps-t0 = ResourceShenheDressDiffuse
 ps-t1 = ResourceShenheDressLightMap
+$\global\offset\offset = $offset
 run = CommandList\global\offset\Offset
 
 ; Resources -------------------------
@@ -484,4 +471,3 @@ run = CommandList\global\offset\offset
 
 The value for offset can be set in another mod- such as a `merge.ini` and then be accessed via namespace from their weapon mod. This is more dynamic and advanced but way more powerful for when you want to use the same offset value for multiple mods and have it change on certain conditions.
 Read more about `namespaces` at: <https://github.com/leotorrez/GI-Model-Importer/wiki>
-
