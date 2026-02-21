@@ -93,10 +93,10 @@ To fix this issue, we need to offset the character.
 
 ### Offset
 
-1. Download [Offset Scale Changer](#requirements)
-2. Unpack it and copy ShaderFixes and Mods folders into your main 3dmigoto folder.
-3. Open your mod INI file
-4. Add **offset** variable to the [Constants] section:
+- Download [Offset Scale Changer](#requirements)
+- Unpack it and copy ShaderFixes and Mods folders into your main 3dmigoto folder.
+- Open your mod INI file
+- Add **offset** variable to the [Constants] section:
 
 ```INI
 [Constants]
@@ -104,8 +104,8 @@ global $offset = *offset_value*
 ...
 ```
 
-5. Calculate the offset when the character is on screen by adding `$\global\offset\offset = $offset`, then apply the offset to every character part they have (head, body, dress, extra).  
-   To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
+- Calculate the offset when the character is on screen by adding `$\global\offset\offset = $offset`, then apply the offset to every character part they have (head, body, dress, extra).  
+  To do that, you need to add `run = CommandList\global\offset\Offset` line to their respective sections (this can technically be applied on gliders, weapons and accessories but those are not supported by default so expect issues or wait for an update on the script):
 
 ```INI
 ...
@@ -127,22 +127,22 @@ It is very important that **all the modifications to the face parts are done by 
 
 To hide the original face, you need to prevent all the face parts from rendering. You can do that by placing the line `handling = skip` in their overrides.
 
-It is recommended that you use the `if $active == 1` check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
+It is recommended that you use the check because we don't want this to take effect when our character is not on screen and another character uses the same face parts.
 
 ```INI
 [Constants]
-global $active = 0
+global $active
 
 [Present]
-post $active = 0
+post $active = $active - 1
 
 [TextureOverridePosition]
 hash =
-$active = 1
+$active = 2
 
 [TextureOverrideFace1]
 hash = *Face Part IB Hash*
-if $active == 1
+if $active > 0
     handling = skip
 endif
 ...
@@ -153,7 +153,7 @@ The outlines of the face might end up floating midair if you have other shaders 
 ```INI
 [TextureOverrideFace1]
 hash = *Face Part IB Hash*
-if $active == 1
+if $active > 0
     handling = skip
 endif
 ```
@@ -169,6 +169,10 @@ The body shading is too complex for the style the face has, hence you need to ge
 Lastly, the eyes in genshin are actually hollow because of how their shaders are set up- HOWEVER we don't have the proper shading in body mesh. So you will have to think a way around it. I personally haven't found any good method so good luck on this and contact me if you find a decent method.
 
 ### Resizing face
+
+```warning:
+CURRENTLY NOT FUNCTIONAL
+```
 
 You don't need to resize the face if you hide it. But in case you don't - resizing is an option, although not recommended.
 
@@ -219,17 +223,16 @@ global $active = 0
 global $offset = *face_offset_value*
 
 [Present]
-post $active = 0
+post $active = $active - 1
 
 [TextureOverrideCharacterPosition]
 ; hash =
-;.......
-$active = 1
-$\global\offset\faceOffset = $offset
+$active = 2
 
 [TextureOverrideCharacterFaceIB1]
 ; hash =
-if $active == 1
+if $active > 0
+    $\global\offset\offset = $offset
     run = CommandList\global\offset\OffsetFace
 endif
 ...
@@ -247,7 +250,11 @@ global $active = 0
 global $offset = *weapon_offset_value*
 
 [Present]
-post $active = 0
+post $active = $active - 1
+
+[TextureOverrideCharacterPosition]
+; hash =
+$active = 2
 
 [TextureOverrideWeaponIB]
 hash = xxxxxx ; example hash
@@ -257,7 +264,7 @@ drawindexed = auto
 [TextureOverrideWeaponHead] ;repeat for other parts if the weapon has them, such as Head, Body, Dress or Extra
 hash = xxxxxx ; example hash
 match_first_index = 0
-if $active == 1
+if $active > 0
     $\global\offset\offset = $offset
     run = CommandList\global\offset\offset
 endif
@@ -312,33 +319,30 @@ global $active = 0
 global $offset = -0.45
 
 [Present]
-post $active = 0
-
+post $active = $active - 1
 
 [TextureOverrideShenhePosition]
 hash = e44b58b5
 vb0 = ResourceShenhePosition
-$active = 1
+$active = 2
 
 [TextureOverrideShenheFaceIB1]
 hash = 7b61f273
 match_priority = 1 ; removes face modding conflict warnings
-if $active == 1
-    $\global\offset\offset = $offset
-    run = CommandList\global\offset\Offset
-endif
+run = CommandListFaceOffset
 
 [TextureOverrideShenheFaceIB2]
 hash = dc710a44
 match_priority = 1
-if $active == 1
-    $\global\offset\offset = $offset
-    run = CommandList\global\offset\Offset
-endif
+run = CommandListFaceOffset
+
 [TextureOverrideShenheFaceIB3]
 hash = f931161a
 match_priority = 1
-if $active == 1
+run = CommandListFaceOffset
+
+[CommandListFaceOffset]
+if $active > 0
     $\global\offset\offset = $offset
     run = CommandList\global\offset\Offset
 endif
@@ -399,34 +403,34 @@ This is a separate INI file to hide Nahida's face in Leo's 'Rukkhadevata over Na
 
 ```INI
 [Constants]
-global $active = 0
+global $active
 
 [Present]
-post $active = 0
+post $active = $active - 1
 
 [TextureOverridePosition]
 hash = 37ef15ec
-$active = 1
+$active = 2
 match_priority = 1 ;Needed to eliminate the conflict with the main ini file because of the same hash override in there
 
 [TextureOverrideFace1]
 hash = 46343c52
 match_priority = 1
-if $active == 1
+if $active > 0
     handling = skip
 endif
 
 [TextureOverrideFace2]
 hash = 17b3e07a
 match_priority = 1
-if $active == 1
+if $active > 0
     handling = skip
 endif
 
 [TextureOverrideFace3]
 hash = 7fc58760
 match_priority = 1
-if $active == 1
+if $active > 0
     handling = skip
 endif
 ```
@@ -440,32 +444,40 @@ global $active = 0
 global $offset = 0.1
 
 [Present]
-post $active = 0
+post $active = $active - 1
 
 ; Overrides -------------------------
 
 [TextureOverrideFurinaPosition]
 hash = 8294fe98
 match_priority = 123
-$active = 1
+$active = 2
 
 [TextureOverrideFesteringDesire]
 hash = 5107fe33
-vb0 = ResourceFesteringDesire
+match_priority = 123
+if $active > 0
+  vb0 = ResourceFesteringDesire
+endif
 
 [TextureOverrideFesteringDesireIB]
 hash = caa58be1
-handling = skip
-drawindexed = auto
+match_priority = 123
+if $active > 0
+  handling = skip
+  drawindexed = auto
+endif
 
 [TextureOverrideFesteringDesireHead]
 hash = caa58be1
 match_first_index = 0
-ib = ResourceFesteringDesireHeadIB
-ps-t0 = ResourceFesteringDesireHeadDiffuse
-ps-t1 = ResourceFesteringDesireHeadLightMap
-$\global\offset\offset = $offset
-run = CommandList\global\offset\offset
+if $active > 0
+  ib = ResourceFesteringDesireHeadIB
+  ps-t0 = ResourceFesteringDesireHeadDiffuse
+  ps-t1 = ResourceFesteringDesireHeadLightMap
+  $\global\offset\offset = $offset
+  run = CommandList\global\offset\offset
+endif
 ...
 ```
 
