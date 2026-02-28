@@ -28,15 +28,23 @@ jobs:
       - name: Check for new commits via Atom feed
         id: check_feed
         run: |
-          # Fetch the Atom feed for commits
-          FEED_URL="https://github.com/SilentNightSound/GIMI-Package/commits/master.atom"
-          curl -s "$FEED_URL" > feed.xml
+          # Fetch the Atom feed for commits (try main branch)
+          FEED_URL="https://github.com/SilentNightSound/GIMI-Package/commits/main.atom"
+          curl -s -L "$FEED_URL" > feed.xml
           
-          # Parse the feed to find commits that modified our tracked files
-          # Get the most recent commit SHA from the feed
-          LATEST_COMMIT=$(grep -m 1 '<id>tag:github.com' feed.xml | sed 's/.*Commit\/\([^<]*\).*/\1/')
+          # Parse the feed to find the most recent commit SHA
+          # The feed format is: <id>tag:github.com,2008:Grit::Commit/COMMIT_SHA</id>
+          LATEST_COMMIT=$(grep -o 'Commit/[a-f0-9]\{40\}' feed.xml | head -1 | cut -d'/' -f2)
           
           echo "Latest commit from feed: $LATEST_COMMIT"
+          
+          # Validate commit SHA
+          if [ -z "$LATEST_COMMIT" ] || [ ${#LATEST_COMMIT} -ne 40 ]; then
+            echo "Error: Could not extract valid commit SHA from feed"
+            cat feed.xml
+            exit 1
+          fi
+          
           echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
           
           # Check if we've already processed this commit
@@ -45,6 +53,7 @@ jobs:
             if [ "$LATEST_COMMIT" = "$LAST_SYNCED" ]; then
               echo "Already synced to latest commit"
               echo "needs_sync=false" >> $GITHUB_OUTPUT
+              rm -f feed.xml
               exit 0
             fi
           fi
@@ -61,22 +70,22 @@ jobs:
           # Download the specific files from the latest commit using GitHub's raw content
           mkdir -p temp_files
           
-          # Try to download ORFix.ini from the correct path
-          if curl -f -s "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/ORFix.ini" -o temp_files/ORFix.ini; then
+          # Try to download ORFix.ini from the correct path (follow redirects with -L)
+          if curl -f -s -L "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/ORFix.ini" -o temp_files/ORFix.ini; then
             echo "Downloaded ORFix.ini"
           else
             echo "ORFix.ini not found in commit"
           fi
           
-          # Try to download Offset.ini from the correct path
-          if curl -f -s "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/Offset.ini" -o temp_files/Offset.ini; then
+          # Try to download Offset.ini from the correct path (follow redirects with -L)
+          if curl -f -s -L "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/Offset.ini" -o temp_files/Offset.ini; then
             echo "Downloaded Offset.ini"
           else
             echo "Offset.ini not found in commit"
           fi
           
-          # Try to download ORFixAPI.ini as well (found in same directory)
-          if curl -f -s "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/ORFixAPI.ini" -o temp_files/ORFixAPI.ini; then
+          # Try to download ORFixAPI.ini as well (found in same directory) (follow redirects with -L)
+          if curl -f -s -L "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/ORFixAPI.ini" -o temp_files/ORFixAPI.ini; then
             echo "Downloaded ORFixAPI.ini"
           else
             echo "ORFixAPI.ini not found in commit"
