@@ -1,0 +1,153 @@
+name: Sync GIMI Configuration Files
+
+on:
+  schedule:
+    # Run every hour to check for updates
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync-configs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Check for new commits via Atom feed
+        id: check_feed
+        run: |
+          # Fetch the Atom feed for commits
+          FEED_URL="https://github.com/SilentNightSound/GIMI-Package/commits/master.atom"
+          curl -s "$FEED_URL" > feed.xml
+          
+          # Parse the feed to find commits that modified our tracked files
+          # Get the most recent commit SHA from the feed
+          LATEST_COMMIT=$(grep -m 1 '<id>tag:github.com' feed.xml | sed 's/.*Commit\/\([^<]*\).*/\1/')
+          
+          echo "Latest commit from feed: $LATEST_COMMIT"
+          echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+          
+          # Check if we've already processed this commit
+          if [ -f ".last_synced_commit" ]; then
+            LAST_SYNCED=$(cat .last_synced_commit)
+            if [ "$LATEST_COMMIT" = "$LAST_SYNCED" ]; then
+              echo "Already synced to latest commit"
+              echo "needs_sync=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+          
+          echo "needs_sync=true" >> $GITHUB_OUTPUT
+          rm -f feed.xml
+      
+      - name: Fetch files from GIMI-Package repo
+        if: steps.check_feed.outputs.needs_sync == 'true'
+        id: fetch
+        run: |
+          LATEST_COMMIT="${{ steps.check_feed.outputs.latest_commit }}"
+          
+          # Download the specific files from the latest commit using GitHub's raw content
+          mkdir -p temp_files
+          
+          # Try to download ORFix.ini from the correct path
+          if curl -f -s "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/ORFix.ini" -o temp_files/ORFix.ini; then
+            echo "Downloaded ORFix.ini"
+          else
+            echo "ORFix.ini not found in commit"
+          fi
+          
+          # Try to download Offset.ini from the correct path
+          if curl -f -s "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/Offset.ini" -o temp_files/Offset.ini; then
+            echo "Downloaded Offset.ini"
+          else
+            echo "Offset.ini not found in commit"
+          fi
+          
+          # Try to download ORFixAPI.ini as well (found in same directory)
+          if curl -f -s "https://raw.githubusercontent.com/SilentNightSound/GIMI-Package/$LATEST_COMMIT/GIMI/Core/GIMI/Libraries/ORFixAPI.ini" -o temp_files/ORFixAPI.ini; then
+            echo "Downloaded ORFixAPI.ini"
+          else
+            echo "ORFixAPI.ini not found in commit"
+          fi
+          
+          # Get commit details using GitHub API
+          COMMIT_DATA=$(curl -s "https://api.github.com/repos/SilentNightSound/GIMI-Package/commits/$LATEST_COMMIT")
+          
+          COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | grep -m 1 '"message"' | sed 's/.*"message": "\([^"]*\)".*/\1/')
+          COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | grep -m 1 '"name"' | sed 's/.*"name": "\([^"]*\)".*/\1/')
+          COMMIT_HASH=$(echo "$LATEST_COMMIT" | cut -c1-7)
+          
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "commit_author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+          echo "commit_hash=$COMMIT_HASH" >> $GITHUB_OUTPUT
+          echo "full_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+      
+      - name: Check for changes and copy files
+        if: steps.check_feed.outputs.needs_sync == 'true'
+        id: check_changes
+        run: |
+          CHANGED=false
+          
+          # Check if ORFix.ini exists and has changes
+          if [ -f "temp_files/ORFix.ini" ]; then
+            if [ ! -f "releases/ORFix.ini" ] || ! cmp -s "temp_files/ORFix.ini" "releases/ORFix.ini"; then
+              cp temp_files/ORFix.ini releases/ORFix.ini
+              CHANGED=true
+              echo "ORFix.ini has been updated"
+            fi
+          fi
+          
+          # Check if Offset.ini exists and has changes
+          if [ -f "temp_files/Offset.ini" ]; then
+            if [ ! -f "releases/Offset.ini" ] || ! cmp -s "temp_files/Offset.ini" "releases/Offset.ini"; then
+              cp temp_files/Offset.ini releases/Offset.ini
+              CHANGED=true
+              echo "Offset.ini has been updated"
+            fi
+          fi
+          
+          # Check if ORFixAPI.ini exists and has changes
+          if [ -f "temp_files/ORFixAPI.ini" ]; then
+            if [ ! -f "releases/ORFixAPI.ini" ] || ! cmp -s "temp_files/ORFixAPI.ini" "releases/ORFixAPI.ini"; then
+              cp temp_files/ORFixAPI.ini releases/ORFixAPI.ini
+              CHANGED=true
+              echo "ORFixAPI.ini has been updated"
+            fi
+          fi
+          
+          # Clean up
+          rm -rf temp_files
+          
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          # Save the commit SHA we've synced to
+          echo "${{ steps.check_feed.outputs.latest_commit }}" > .last_synced_commit
+          
+          git add releases/ORFix.ini releases/Offset.ini releases/ORFixAPI.ini .last_synced_commit
+          git commit -m "Sync GIMI configs: ${{ steps.fetch.outputs.commit_message }}" \
+                     -m "" \
+                     -m "Synced from SilentNightSound/GIMI-Package@${{ steps.fetch.outputs.commit_hash }}" \
+                     -m "Original commit by: ${{ steps.fetch.outputs.commit_author }}" \
+                     -m "Source: https://github.com/SilentNightSound/GIMI-Package/commit/${{ steps.fetch.outputs.full_commit }}"
+          git push
+      
+      - name: No changes detected
+        if: steps.check_feed.outputs.needs_sync == 'false' || steps.check_changes.outputs.changed == 'false'
+        run: |
+          if [ "${{ steps.check_feed.outputs.needs_sync }}" = "false" ]; then
+            echo "No new commits detected"
+          else
+            echo "No changes detected in tracked files"
+          fi
