@@ -79,15 +79,46 @@ jobs:
             echo "ORFixAPI.ini not found in commit"
           fi
           
-          # Get commit details using GitHub API
-          COMMIT_DATA=$(curl -s "https://api.github.com/repos/SilentNightSound/GIMI-Package/commits/$LATEST_COMMIT")
+          # Get commit details using GitHub API with authentication
+          COMMIT_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/SilentNightSound/GIMI-Package/commits/$LATEST_COMMIT")
           
-          COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | grep -m 1 '"message"' | sed 's/.*"message": "\([^"]*\)".*/\1/')
-          COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | grep -m 1 '"name"' | sed 's/.*"name": "\([^"]*\)".*/\1/')
+          # Check if API call was successful
+          if echo "$COMMIT_DATA" | grep -q '"message".*"API rate limit'; then
+            echo "API rate limit hit, using fallback method"
+            # Fallback: clone repo to get commit info
+            git clone --depth 10 https://github.com/SilentNightSound/GIMI-Package.git temp_repo
+            cd temp_repo
+            COMMIT_MESSAGE=$(git log -1 --format="%s" $LATEST_COMMIT 2>/dev/null || echo "Update GIMI configs")
+            COMMIT_AUTHOR=$(git log -1 --format="%an" $LATEST_COMMIT 2>/dev/null || echo "Unknown")
+            cd ..
+            rm -rf temp_repo
+          else
+            # Parse JSON response using jq-like approach
+            COMMIT_MESSAGE=$(echo "$COMMIT_DATA" | grep -o '"message":"[^"]*"' | head -1 | sed 's/"message":"\(.*\)"/\1/' | sed 's/\\n/ /g')
+            COMMIT_AUTHOR=$(echo "$COMMIT_DATA" | grep -o '"name":"[^"]*"' | head -1 | sed 's/"name":"\(.*\)"/\1/')
+          fi
+          
+          # Fallback to generic message if parsing failed
+          if [ -z "$COMMIT_MESSAGE" ]; then
+            COMMIT_MESSAGE="Update GIMI configuration files"
+          fi
+          if [ -z "$COMMIT_AUTHOR" ]; then
+            COMMIT_AUTHOR="Unknown"
+          fi
+          
           COMMIT_HASH=$(echo "$LATEST_COMMIT" | cut -c1-7)
           
-          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
-          echo "commit_author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+          # Use multiline output format to avoid issues with special characters
+          {
+            echo "commit_message<<EOF"
+            echo "$COMMIT_MESSAGE"
+            echo "EOF"
+            echo "commit_author<<EOF"
+            echo "$COMMIT_AUTHOR"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
           echo "commit_hash=$COMMIT_HASH" >> $GITHUB_OUTPUT
           echo "full_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
       
@@ -136,11 +167,18 @@ jobs:
           echo "${{ steps.check_feed.outputs.latest_commit }}" > .last_synced_commit
           
           git add releases/ORFix.ini releases/Offset.ini releases/ORFixAPI.ini .last_synced_commit
-          git commit -m "Sync GIMI configs: ${{ steps.fetch.outputs.commit_message }}" \
-                     -m "" \
-                     -m "Synced from SilentNightSound/GIMI-Package@${{ steps.fetch.outputs.commit_hash }}" \
-                     -m "Original commit by: ${{ steps.fetch.outputs.commit_author }}" \
-                     -m "Source: https://github.com/SilentNightSound/GIMI-Package/commit/${{ steps.fetch.outputs.full_commit }}"
+          
+          # Create commit message using a file to avoid special character issues
+          cat > commit_msg.txt << 'COMMIT_EOF'
+          Sync GIMI configs: ${{ steps.fetch.outputs.commit_message }}
+          
+          Synced from SilentNightSound/GIMI-Package@${{ steps.fetch.outputs.commit_hash }}
+          Original commit by: ${{ steps.fetch.outputs.commit_author }}
+          Source: https://github.com/SilentNightSound/GIMI-Package/commit/${{ steps.fetch.outputs.full_commit }}
+          COMMIT_EOF
+          
+          git commit -F commit_msg.txt
+          rm commit_msg.txt
           git push
       
       - name: No changes detected
