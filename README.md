@@ -24,15 +24,17 @@ Specific tools for mod makers to use on their mods. Users may also take advantag
 
 These can be applied to any 3DM install.
 
-- **Outfit Compiler(DEPRECATED FOR GIMI, SRMI, ZZMI and HIMI):** A script that compiles all the mods in a folder into a single mod. This allows you to export your toggles as single mods and lately compile them into a single mod alongside your base body. [For a quick guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/OutfitCompiler.md)
+- **Outfit Compiler(DEPRECATED FOR GIMI, SRMI, ZZMI and HIMI):** A script that compiles all the mods in a folder into a single mod. This allows you to export your toggles as single mods and lately compile them into a single mod alongside your base body. [For a quick guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/OutfitCompiler.md). XXMI Tools has absorbed the features of this plugin and is no longer needed, HOWEVER 3dm games not supported by XXMI tools can still use this plugin.
 
-- **DailyLumine.py:** Despite its name is not only for lumine. It's a script meant to deactivate all the folders within a specific directory(assuming you have your mods organized by character folder) and randomly reactivate only one of them, hence swapping active mod on launch. It is better to use this script in the launch = clause of your 3DM and then have the script launch the game for you. You might need to set Python as the default exe for .py files.
+- **DailyLumine.py:** Despite its name is not only for lumine. It's a script meant to deactivate all the folders within a specific directory(assuming you have your mods organized by character folder) and randomly reactivate only one of them, hence swapping active mod on launch. It is better to use this script in the launch = clause of your 3DM and then have the script launch the game for you.
 
-- **.ModManager v2.ahk** is an AutoHotKey v2 script that speeds up the process of adding and removing the word DISABLED from the start of folders to speed up mod handling. If you don't have experience with AutoHotKey is better to avoid it.
+- **.ModManager v2.ahk:** is an AutoHotKey v2 script that speeds up the process of adding and removing the word DISABLED from the start of folders to speed up mod handling. If you don't have experience with AutoHotKey is better to avoid it.
   ALT + D to toggle folder
+
+- **Texture Debugger:** A ini that helps debug texture usage in shaders. Helpful to verify if mods are behaving correctly or to check shader vanilla slot-usage.
 
 ## Blender addons and scripts
 
-- **JoinMeshes.py(DEPRECATED):** Blender plugin that eases the repetitive tasks of mod exporting. Includes auto modifier application, shapekeys and even exporting every frame of animation as a unique mod folder. Useful for advanced modding and faster workflows. [For a guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md)
+- **JoinMeshes.py(DEPRECATED):** Blender plugin that eases the repetitive tasks of mod exporting. Includes auto modifier application, shapekeys and even exporting every frame of animation as a unique mod folder. Useful for advanced modding and faster workflows. [For a guide click here](https://github.com/leotorrez/LeoTools/blob/main/guides/JoinMeshesGuide.md). Nowadays XXMI tools has absorbed the features of this plugin and is no longer needed.
 
 - **quickBlenderImport.py:** Eases the process of importing models from dumps, applies materials to each corresponding meshes and does some clean-up tasks on the mesh leaving it in nice quads.
